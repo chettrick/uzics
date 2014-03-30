@@ -1,0 +1,14 @@
+b:submit b:qcc data
+b:submit b:qcc filesys
+b:submit b:qcc scall1
+b:submit b:qcc scall2
+b:submit b:qcc devio
+b:submit b:qcc devwd
+b:submit b:qcc devmisc
+b:submit b:qcc devtty
+b:submit b:qcc devflop
+b:submit b:qcc dispatch
+b:submit b:qcc machdep
+b:submit b:qcc process
+b:submit loadunix
+

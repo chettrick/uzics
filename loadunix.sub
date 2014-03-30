@@ -1,0 +1,3 @@
+loader $1 -o 500 filler data process machdep dispatch scall1 scall2 filesys devio devtty devwd devflop devmisc extras
+pip unix.bin=$$$$$$.com[osmombassa^Z]
+era $$$$$$.com

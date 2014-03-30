@@ -1,0 +1,12 @@
+;**************************************************
+; UZI (Unix Z80 Implementation) Kernel:  filler.mac
+;**************************************************
+
+
+dseg
+start:  db 1,2,3,4,5,6,7,8
+        ds 8000h-8-8-3-3-100h
+        db "MOMBASSA"
+        ;this should be at address 7ffd.
+end     start
+

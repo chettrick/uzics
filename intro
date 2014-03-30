@@ -1,0 +1,174 @@
+		UZI: UNIX Z-80 IMPLEMENTATION
+
+		  Written by Douglas Braun
+
+
+Introduction:
+
+UZI is an implementation of the Unix kernel written for a Z-80 based
+computer.  It implementts almost all of the functionality of the
+7th Edition Unix kernel.  UZI was written to run on one specific
+collection of custom-built hardware, but since it can easily have device
+drivers added to it, and it does not use any memory management hardware,
+it should be possible to port it to numerous computers that current use
+the CP/M operating system.  The source code is written mostly in C,
+and was compiled with The Code Works' Q/C compiler.  UZI's code was
+written from scratch, and contains no AT&T code, so it is not subject
+to any of AT&T's copyright or licensing restrictions.  Numerous 7th
+Edition programs have been ported to UZI with little or no difficulty,
+including the complete Bourne shell, ed, sed, dc, cpp, etc.
+
+
+How it works:
+
+Since there is no standard memory management hardware on 8080-family
+computers, UZI uses "total swapping" to achieve multiprocessing.
+This has two implications:  First, UZI requires a reasonably fast
+hard disk.  Second, there is no point in running a different process
+while a process is waiting for disk I/O.  This simplifies the design
+of the block device drivers, since they do not have to be interrupt-based.
+
+UZI itself occupies the upper 32K of memory, and the currently running
+process occupies the lower 32K.   Since UZI currently barely fits in 32K,
+a full 64K of RAM is necessary.
+
+UZI does need some additional hardware support.  First, there must be
+some sort of clock or timer that can provide a periodic interrupt.
+Also, the current implementation uses an additional real-time clock
+to get the time for file timestamps, etc.  The current TTY driver assumes
+an interrupt-driven keyboard, which should exist on most systems.
+The distribution contains code for hard and floppy disk drivers, but
+since these were written for custom hardware, they are provided only
+as templates to write new ones.
+
+
+How UZI is different than real Unix:
+
+UZI implements almost all of the 7th Edition functionality.
+All file I/O, directories, mountable file systems, user and group IDs,
+pipes, and applicable device I/O are supported.  Process control
+(fork(), execve(), signal(), kill(), pause(), alarm(), and wait()) are fully
+supported.  The number of processes is limited only by the swap space
+available.  As mentioned above,  UZI implements Unix well enough to
+run the Bourne shell in its full functionality.  The only changes made
+to the shell's source code were to satisfy the limitations of the C compiler.
+
+Here is a (possibly incomplete) list of missing features and limitations:
+
+    The debugger- and profiler-related system calls do not exist.
+
+    The old 6th edition seek() was implemented, instead of lseek().
+
+    The supplied TTY driver is bare-bones.  It supports only one port,
+    and most IOCTLs are not supported.
+
+    Inode numbers are only 16-bit, so filesystems are 32 Meg or less.
+
+    File dates are not in the standard format.  Instead they look like
+    those used by MS-DOS.
+
+    The 4.2BSD execve() was implemented.  Additional flavors of exec()
+    are supported by the library.
+
+    The format of the device driver switch table is unlike that of
+    the 7th Edition.
+
+    The necessary semaphores and locking mechanisms to implement 
+    reentrant disk I/O are not there.  This would make it harder to
+    implement interrupt-driven disk I/O without busy-waiting.
+
+
+A Description of this Release:
+
+Here is a list of the files supplied, and a brief description of each:
+
+
+intro:		What you are reading
+
+config.h:	Setup parameters, such as table sizes, and the device
+		driver switch table.
+
+unix.h:		All strcuture declarations, typedefs and defines.
+		(Includes things like errno.h).
+
+extern.h:	Declarations of all global variables and tables.
+
+data.c:		Dummy to source extern.h and devine globals.
+
+dispatch.c:	System call dispatch table.
+
+scall1.c:	System calls, mostly file-related.
+
+scall2.c:	Rest of system calls.
+
+filesys.c:	Routines for managing file system.
+
+process.c:	Routines for process management and context switching.
+		Somewhat machine-dependent.
+
+devio.c:	Generic I/O routines, including queue routines.
+
+devtty.c:	Simple TTY driver, slightly-machine dependent.
+
+devwd.c:	Hard disk driver.  Very machine-dependent.
+
+devflop.c:	Floppy disk driver.  Very machine-dependent.
+
+devmisc.c:	Simple device drivers, such as /dev/mem.
+
+machdep.c:	Machine-dependent code, especially real-time-clock and
+		interrupt handling code.
+
+extras.c:	Procedures missing from the Q/C compiler's library.
+
+filler.mac:	Dummy to make linker load UZI at correct address.
+
+makeunix.sub:	CP/M SUBMIT file to compile everything.
+
+loadunix.sub:	CP/M SUBMIT file to load everything.
+
+
+Miscellaneous Notes:
+
+UZI was compiled with the Code Works Q/C C compiler and the Microsoft
+M80 assembler under the CP/M operating system, on the same hardware
+it runs on.  Also used was a version of cpp ported to CP/M, since
+the Q/C compiler does not handle macros with arguments.  However, there
+are only a couple of these in the code, and they could easily be removed.
+
+Because UZI occupies the upper 32K of memory, the standard L80 linker
+could not be used to link it.  Instead, a homebrew L80 replacement linker
+was used.  This generated a 64K-byte CP/M .COM file, which has the lower 
+32K pruned by the CP/M PIP utility.  This is the reason for appearance
+of the string "MOMBASSA" in filler.mac and loadunix.sub.
+
+To boot UZI, a short CP/M program was run that reads in the UZI image,
+copies it to the upper 32K of memory, and jumps to its start address.
+Other CP/M programs were written to build, inspect, and check UZI filesystems
+under CP/M.  These made it possible to have a root file system made before
+starting up UZI.  If the demand exists, these programs can be included
+in another release.
+
+
+Running programs under UZI:
+
+A number of 7th Edition, System V, and 4.2BSD programs were ported to
+UZI.  Most notably, the Bourne shell and ed run fine under UZI.
+In addition the 4.2BSD stdio library was also ported.  This, along
+with the Code Works Q/C library and miscellaneous System V library 
+functions, was used when porting programs.
+
+Due to obvious legal reasons, the source or executables for most of these
+programs cannot be released.  However, some kernel-dependent programs
+such as ps and fsck were written from scratch and can be included in future
+releases.  Also, a package was created that can be linked to CP/M .COM
+files that will allow them to run under UZI.  This was used to get
+the M80 assembler and L80 linker to run under UZI.  Cpp was also
+ported to UZI.  However, it was not possible to fit the Q/C compiler
+into 32K, so all programs (and UZI itself) were cross-compiled under CP/M.
+
+The Minix operating system, written for PCs by Andrew Tanenbaum et al,
+contains many programs that should compile and run under UZI.  Since
+Minix is much less encumbered by licensing provisions than real Unix,
+it would make sense to port Minix programs to UZI.  In fact, UZI itself
+could be ported to the PC, and used as a replacement for the Minix kernel.
