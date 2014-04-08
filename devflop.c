@@ -2,21 +2,18 @@
 UZI (Unix Z80 Implementation) Kernel:  devflop.c
 ***************************************************/
 
-
 #include "unix.h"
 #include "extern.h"
 
 extern ei();
 
-
-#define NUMTRKS 76
-#define NUMSECS 26
+#define NUMTRKS	76
+#define NUMSECS	26
 
 static char ftrack, fsector, ferror;
 static char *fbuf;
 
 static read(), write(), reset();
-
 
 fd_read(minor, rawflag)
 int16 minor;

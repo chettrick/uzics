@@ -2,57 +2,51 @@
 UZI (Unix Z80 Implementation) Kernel:  extras.c
 ***************************************************/
 
-
 bcopy()
 {
 #asm 8080
-; BCOPY(SRC,DEST,COUNT)
+; BCOPY(SRC, DEST, COUNT)
 ;
-        POP     H
-        SHLD    HOLDER
+	POP	H
+	SHLD	HOLDER
 .Z80
-        LD      (BCHLDR),BC
+	LD	(BCHLDR),BC
 .8080   
-        POP     B
-        POP     D
-        POP     H
-        PUSH    H
-        PUSH    H
-        PUSH    H
+	POP	B
+	POP	D
+	POP	H
+	PUSH	H
+	PUSH	H
+	PUSH	H
 .Z80
-        LDIR
+	LDIR
 .8080
-        LHLD    HOLDER
+	LHLD	HOLDER
 .Z80
-        LD      BC,(BCHLDR)
+	LD	BC,(BCHLDR)
 .8080
-        PCHL
+	PCHL
 #endasm
 }
 
 #asm 
 ;
-HOLDER: DS      2
-BCHLDR: DS      2
+HOLDER:	DS	2
+BCHLDR:	DS	2
 ;
 ;
 #endasm
 
-
-bzero(ptr,count)
-char *ptr;
-int count;
+bzero(char *ptr, int count)
 {
-    *ptr = 0;
-    bcopy(ptr,ptr+1,count-1);
+	*ptr = 0;
+	bcopy(ptr, ptr + 1, count - 1);
 }
-
 
 abort()
 {
 #asm 8080
-        DI
-        JMP     $
+	DI
+	JMP	$
 #endasm
 }
-

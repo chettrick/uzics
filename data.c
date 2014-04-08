@@ -7,8 +7,7 @@ UZI (Unix Z80 Implementation) Kernel:  data.c
 #asm 8080
 CSEG
 @init?::
-        EXTRN   fs@init?
-        JMP     fs@init?
+	EXTRN	fs@init?
+	JMP	fs@init?
 #endasm
 #include "extern.h"
-
