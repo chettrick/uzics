@@ -83,7 +83,7 @@ typedef struct blkbuf {
 	char	bf_dirty;
 	char	bf_busy;
 	uint16	bf_time;	/* LRU time stamp. */
-	struct	blkbuf *bf_next;/* LRU free list pointer. */
+	struct	blkbuf *bf_next; /* LRU free list pointer. */
 } blkbuf, *bufptr;
 
 typedef struct dinode {
@@ -226,15 +226,17 @@ typedef struct p_tab {
 } p_tab, *ptptr;
 
 /* Per-process data (swapped with process). */
-#asm 8080
+/*
+__asm 8080
 ?OSYS	equ	2		;Byte offsets of elements of u_data.
 ?OCALL	equ	3
 ?ORET	equ	4		;Return location.
 ?ORVAL	equ	6		;Return value.
 ?OERR	equ	8		;Error number.
-?OSP	equ	10		;User's stack pointer.
-?OBC	equ	12		;User's frame pointer.
-#endasm
+?OSP	equ	10		;Users stack pointer.
+?OBC	equ	12		;Users frame pointer.
+__endasm;
+*/
 
 typedef struct u_data {
 	struct	p_tab *u_ptab;	/* Process table pointer. */
@@ -268,7 +270,7 @@ typedef struct u_data {
 	inoptr	u_ino;		/* Used during execve(). */
 	char	*u_isp;		/* Value of initial sp (argv). */
 
-	int	(*u_sigvec[NSIGS])();	/* Array of signal vectors. */
+	int	(*u_sigvec[NSIGS])(); /* Array of signal vectors. */
 	int	u_cursig;	/* Signal currently being caught. */
 	char	u_name[8];	/* Name invoked with. */
 	time_t	u_utime;	/* Elapsed ticks in user mode. */
@@ -287,7 +289,7 @@ struct s_argblk {
 
 /* Device driver switch table. */
 typedef struct devsw {
-	int	minor;		/* The minor device number (an argument to below). */
+	int	minor;		/* The minor device number (an arg to below). */
 	int	(*dev_open)();	/* The routines for reading, etc. */
 	int	(*dev_close)();	/* Format: op(minor,blkno,offset,count,buf); */
 	int	(*dev_read)();	/* Offset would be ignored for block devices. */

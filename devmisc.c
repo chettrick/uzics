@@ -9,16 +9,15 @@ UZI (Unix Z80 Implementation) Kernel:  devmisc.c
 
 mem_read(int minor, int rawflag)
 {
-	bcopy((char *)(512*udata.u_offset.o_blkno+udata.u_offset.o_offset),
-	    udata.u_base, udata.u_count);
+	bcopy((char *)(512 * udata.u_offset.o_blkno +
+	    udata.u_offset.o_offset), udata.u_base, udata.u_count);
 	return (udata.u_count);
 }
 
 mem_write(int minor, int rawflag)
 {
-	bcopy(udata.u_base,
-	    (char *)(512*udata.u_offset.o_blkno+udata.u_offset.o_offset),
-	    udata.u_count);
+	bcopy(udata.u_base, (char *)(512 * udata.u_offset.o_blkno +
+	    udata.u_offset.o_offset), udata.u_count);
 	return (udata.u_count);
 }
 

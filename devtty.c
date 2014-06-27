@@ -16,7 +16,7 @@ struct s_queue ttyinq = {
 	ttyinbuf,
 	TTYSIZ,
 	0,
-	TTYSIZ/2
+	TTYSIZ / 2
 };
 
 int stopflag;	/* Flag for ^S/^Q */
@@ -30,7 +30,7 @@ tty_read(int16 minor, int16 rawflag)
 	while (nread < udata.u_count) {
 		for (;;) {
 			di();
-			if (remq(&ttyinq,udata.u_base))
+			if (remq(&ttyinq, udata.u_base))
 				break;
 			psleep(&ttyinq);
 			/* XXX - messy */
@@ -108,11 +108,11 @@ tty_int()
 
 	found = 0;
 again:
-	if ((in(0x72)&0x81) != 0x81)
+	if ((in(0x72) & 0x81) != 0x81)
 		return (found);
 	c = in(0x73) & 0x7f;
 
-	if (c==0x1a)			/* ^Z */
+	if (c == 0x1a)			/* ^Z */
 		idump();		/* For debugging. */
 
 	if (c == '\003')		/* ^C */
@@ -125,10 +125,10 @@ again:
 		stopflag = 0;
 		wakeup(&stopflag);
 	} else if (c == '\b') {
-		if (uninsq(&ttyinq,&oc)) {
+		if (uninsq(&ttyinq, &oc)) {
 			if (oc == '\n')
 				/* Don't erase past newline. */
-				insq(&ttyinq,oc);
+				insq(&ttyinq, oc);
 			else {
 				_putc('\b');
 				_putc(' ');
@@ -141,7 +141,7 @@ again:
 			_putc('\r');
 		}
 
-		if (insq(&ttyinq,c))
+		if (insq(&ttyinq, c))
 			_putc(c);
 		else
 			_putc('\007');	/* Beep if no more room. */
@@ -158,13 +158,13 @@ again:
 #ifdef vax
 _putc(char c)
 {
-	write(1,&c,1);
+	write(1, &c, 1);
 }
 #else
 _putc(char c)
 {
-	while (!(in(0x72)&02))
+	while (!(in(0x72) & 02))
 		;
-	out(c,0x73);
+	out(c, 0x73);
 }
 #endif

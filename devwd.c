@@ -12,7 +12,7 @@ UZI (Unix Z80 Implementation) Kernel:  devwd.c
 #define RDCMD 0x28
 #define WRCMD 0x2a
 
-static char cmdblk[10] = { 0, LUN<<5, 0, 0, 0, 0, 0, 0, 0, 0 }; 
+static char cmdblk[10] = { 0, LUN << 5, 0, 0, 0, 0, 0, 0, 0, 0 }; 
 
 extern char *dptr;
 extern int dlen;
@@ -26,7 +26,7 @@ wd_read(unsigned minor, int rawflag)
 	if (setup(minor, rawflag))
 		return (0);
 
-	chkstat(scsiop(),1);
+	chkstat(scsiop(), 1);
 
 	return (cmdblk[8] << 9);
 }
@@ -37,7 +37,7 @@ wd_write(unsigned minor, int rawflag)
 	if (setup(minor, rawflag))
 		return (0);
 
-	chkstat(scsiop(),0);
+	chkstat(scsiop(), 0);
 	return (cmdblk[8] << 9);
 }
 
