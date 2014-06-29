@@ -2,7 +2,8 @@
 UZI (Unix Z80 Implementation) Kernel:  devio.c
 ***************************************************/
 
-int ok(), nogood();
+static int ok();
+static int nogood();
 #define DEVIO
 
 #include "unix.h"
