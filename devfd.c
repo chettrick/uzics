@@ -1,5 +1,5 @@
 /**************************************************
-UZI (Unix Z80 Implementation) Kernel:  devflop.c
+UZI (Unix Z80 Implementation) Kernel:  devfd.c
 ***************************************************/
 
 #include "unix.h"
@@ -13,29 +13,32 @@ extern ei();
 static char ftrack, fsector, ferror;
 static char *fbuf;
 
-static read(), write(), reset();
+unsigned int		fd_read(int16, int);
+unsigned int		fd_write(int16, int);
+static unsigned int	fd(int, int, int);
 
-fd_read(minor, rawflag)
-int16 minor;
-int rawflag;
+int			fd_open(int);
+int			fd_close(int);
+int			fd_ioctl(int);
+
+static			read();
+static			write();
+static			reset();
+
+unsigned int
+fd_read(int16 minor, int rawflag)
 {
     return (fd(1, minor, rawflag));
 }
 
-fd_write(minor, rawflag)
-int16 minor;
-int rawflag;
+unsigned int
+fd_write(int16 minor, int rawflag)
 {
     return (fd(0, minor, rawflag));
 }
 
-
-
-static
-fd(rwflag, minor, rawflag)
-int rwflag;
-int minor;
-int rawflag;
+static unsigned int
+fd(int rwflag, int minor, int rawflag)
 {
     register unsigned nblocks;
     register unsigned firstblk;
@@ -94,9 +97,8 @@ int rawflag;
     return(nblocks);
 }
 
-
-fd_open(minor)
-int minor;
+int
+fd_open(int minor)
 {
     if (in(0x80) & 0x81)
     {
@@ -104,25 +106,22 @@ int minor;
         return (-1);
     }
     reset();
-    return(0);
+    return (0);
 }
 
-
-fd_close(minor)
-int minor;
+int
+fd_close(int minor)
 {
-    return(0);
+    return (0);
 }
 
-
-fd_ioctl(minor)
-int minor;
+int
+fd_ioctl(int minor)
 {
-    return(-1);
+    return (-1);
 }
 
-
-
+/* XXX - Comment out temporarily.
 #asm 8080
 ; ALL THE FUNCTIONS IN HERE ARE STATIC TO THIS PACKAGE
 
@@ -323,4 +322,4 @@ DELAY1: DJNZ    DELAY1  ;.5 MS DELAY
 
 TRYNUM: DS      1
 #endasm
-
+*/
