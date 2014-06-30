@@ -2,8 +2,14 @@
 UZI (Unix Z80 Implementation) Kernel:  extras.c
 ***************************************************/
 
-bcopy()
+void bcopy(void *, void *, int);
+void bzero(void *, int);
+void abort(void);
+
+void
+bcopy(void *src, void *dest, int count)
 {
+#if 0	/* XXX - Comment out temporarily. */
 #asm 8080
 ; BCOPY(SRC, DEST, COUNT)
 ;
@@ -27,8 +33,10 @@ bcopy()
 .8080
 	PCHL
 #endasm
+#endif
 }
 
+#if 0	/* XXX - Comment out temporarily. */
 #asm 
 ;
 HOLDER:	DS	2
@@ -36,17 +44,22 @@ BCHLDR:	DS	2
 ;
 ;
 #endasm
+#endif
 
-bzero(char *ptr, int count)
+void
+bzero(void *ptr, int count)
 {
-	*ptr = 0;
+	ptr = 0;
 	bcopy(ptr, ptr + 1, count - 1);
 }
 
-abort()
+void
+abort(void)
 {
+#if 0	/* XXX - Comment out temporarily. */
 #asm 8080
 	DI
 	JMP	$
 #endasm
+#endif
 }

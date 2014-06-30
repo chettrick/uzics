@@ -5,6 +5,8 @@ UZI (Unix Z80 Implementation) Kernel:  scall1.c
 #include "unix.h"
 #include "extern.h"
 
+extern void	bcopy(void *, void *, int);
+
 /*******************************************
 open(char *name, register int16 flag)
 *********************************************/
@@ -428,6 +430,7 @@ rwsetup(int rwflag)
 	return (ino);
 }
 
+/* XXX - needs more i/o error handling. */
 readi(register inoptr ino)
 {
 	register uint16 amount;
@@ -497,7 +500,7 @@ loop:
 	}
 }
 
-/* writei (and readi) need more i/o error handling */
+/* XXX - needs more i/o error handling. */
 writei(register inoptr ino)
 {
 	register uint16 amount;
@@ -585,7 +588,7 @@ loop:
 
 min(int a, int b)
 {
-	return ( a < b ? a : b);
+	return (a < b ? a : b);
 }
 
 psize(inoptr ino)

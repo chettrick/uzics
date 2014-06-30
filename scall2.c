@@ -5,6 +5,9 @@ UZI (Unix Z80 Implementation) Kernel:  scall2.c
 #include "unix.h"
 #include "extern.h"
 
+extern void	bcopy(void *, void *, int);
+extern void	bzero(void *, int);
+
 /* Getpid() */
 _getpid()
 {

@@ -5,7 +5,10 @@ UZI (Unix Z80 Implementation) Kernel:  filesys.c
 #include "unix.h"
 #include "extern.h"
 
-char *bread();
+extern void	bcopy(void *, void *, int);
+extern void	bzero(void *, int);
+
+char *		bread();
 
 /*
  * n_open is given a string containing a path name,

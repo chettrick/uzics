@@ -27,7 +27,7 @@ UZI (Unix Z80 Implementation) Kernel:  unix.h
 #define SMOUNTED	12742	/* Magic num to specify mounted filesystem. */
 #define NULL		0
 
-/* Macros to trick the compiler into generating more compact code. */
+/* XXX - Macros to trick the compiler into generating more compact code. */
 #define ifnull(e)	if(e){}else
 #define ifnot(e)	if(e){}else
 #define ifzero(e)	if(e){}else
@@ -77,7 +77,7 @@ typedef	uint16 blkno_t;		/* Can have 65536 512-byte blocks in filesystem. */
 #define NULLBLK		((blkno_t) - 1)
 
 typedef struct blkbuf {
-	char	bf_data[512];	/* This MUST be first! */
+	char	bf_data[512];	/* XXX - This MUST be first! */
 	char	bf_dev;
 	blkno_t	bf_blk;
 	char	bf_dirty;
@@ -96,7 +96,7 @@ typedef struct dinode {
 	time_t	i_mtime;
 	time_t	i_ctime;
 	blkno_t	i_addr[20];
-} dinode;			/* Exactly 64 bytes long! */
+} dinode;			/* XXX - Exactly 64 bytes long! */
 
 /* Really only used by users. */
 struct stat {
@@ -226,7 +226,7 @@ typedef struct p_tab {
 } p_tab, *ptptr;
 
 /* Per-process data (swapped with process). */
-/*
+#if 0	/* XXX - Comment out temporarily. */
 __asm 8080
 ?OSYS	equ	2		;Byte offsets of elements of u_data.
 ?OCALL	equ	3
@@ -236,7 +236,7 @@ __asm 8080
 ?OSP	equ	10		;Users stack pointer.
 ?OBC	equ	12		;Users frame pointer.
 __endasm;
-*/
+#endif
 
 typedef struct u_data {
 	struct	p_tab *u_ptab;	/* Process table pointer. */

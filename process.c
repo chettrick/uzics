@@ -5,6 +5,8 @@ UZI (Unix Z80 Implementation) Kernel:  process.c
 #include "unix.h"
 #include "extern.h"
 
+extern void	bzero(void *, int);
+
 init2()
 {
 	register char *j;
