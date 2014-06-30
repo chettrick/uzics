@@ -6,15 +6,17 @@ UZI (Unix Z80 Implementation) Kernel:  machdep.c
 #include "extern.h"
 
 extern int unix();	/* for doexec(). */
+extern void abort();
 
 static int cursig;
 static int (*curvec)();
 
 /*
- * fs_init is called at the very beginning to initialize everything.
- * It is the equivalent of main().
+ * main() is called at the very beginning to initialize everything.
+ * It used to be called fs_init().
  */
-fs_init()
+int
+main(void)
 {
 	di();
 	stkreset();
