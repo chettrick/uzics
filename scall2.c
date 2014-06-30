@@ -64,7 +64,7 @@ _setgid()
 	return (-1);
 }
 
-#undef gid;
+#undef gid
 
 /***********************************
 time(int tvec[])
@@ -192,7 +192,7 @@ _execve()
 	 */
 	udata.u_ino = ino;	/* Termorarily stash these here. */
 
-	tempstk();
+	tempstk();	/* XXX - Where is this defined? */
 	exec2();	/* Never returns. */
 nogood2:
 	bfree(buf, 0);
