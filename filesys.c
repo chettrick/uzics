@@ -10,6 +10,40 @@ extern void	bzero(void *, int);
 
 char *		bread();
 
+inoptr		n_open(char *, inoptr *);
+inoptr		srch_dir(inoptr, char *);
+inoptr		srch_mt(inoptr);
+inoptr		i_open(int, unsigned int);
+int		ch_link(inoptr, char *, char *, inoptr);
+char *		filename(char *);
+int		namecomp(char *, char *);
+inoptr		newfile(inoptr, char *);
+fsptr		getdev(int);
+int		baddev(fsptr);
+unsigned int	i_alloc(int);
+void		i_free(int, unsigned int);
+blkno_t		blk_alloc(int);
+void		blk_free(int, blkno_t);
+int		oft_alloc(void);
+void		oft_deref(int);
+int		uf_alloc(void);
+void		i_ref(inoptr);
+void		i_deref(inoptr);
+void		wr_inode(inoptr);
+int		isdevice(inoptr);
+int		devnum(inoptr);
+void		f_trunc(inoptr);
+void		freeblk(int, blkno_t, int);
+blkno_t		bmap(inoptr, blkno_t, int);
+void		validblk(int, blkno_t);
+inoptr		getinode(int);
+int		super(void);
+int		getperm(inoptr);
+void		setftime(inoptr, int);
+int		getmode(inoptr);
+int		fmount(int, inoptr);
+void		magic(inoptr);
+
 /*
  * n_open is given a string containing a path name,
  * and returns a inode table pointer.  If it returns NULL,
@@ -156,7 +190,7 @@ srch_mt(inoptr ino)
  * An inode # of zero means a newly allocated inode.
  */
 inoptr
-i_open(int dev, unsigned ino)
+i_open(int dev, unsigned int ino)
 {
 	struct dinode *buf;
 	register inoptr nindex;
@@ -239,6 +273,7 @@ badino:
  * there was no space left in the filesystem, or a non-empty oldname
  * was not found, or the user did not have write permission.
  */
+int
 ch_link(inoptr wd, char *oldname, char *newname, inoptr nindex)
 {
 	struct direct curentry;
@@ -320,6 +355,8 @@ filename(char *path)
  * namecomp compares two strings to see if they are the same file name.
  * It stops at 14 chars or a null or a slash, and returns 0 for difference.
  */
+
+int
 namecomp(char *n1, char *n2)
 {
 	register int n;
@@ -395,6 +432,7 @@ getdev(int devno)
 /*
  * baddev returns true if the superblock magic number is corrupt.
  */
+int
 baddev(fsptr dev)
 {
 	return (dev->s_mounted != SMOUNTED);
@@ -404,7 +442,7 @@ baddev(fsptr dev)
  * i_alloc finds an unused inode number, and returns it,
  * or 0 if there are no more inodes available.
  */
-unsigned
+unsigned int
 i_alloc(int devno)
 {
 	fsptr dev;
@@ -412,7 +450,7 @@ i_alloc(int devno)
 	struct dinode *buf;
 	register int j;
 	register int k;
-	unsigned ino;
+	unsigned int ino;
 
 	if (baddev(dev = getdev(devno)))
 		goto corrupt;
@@ -464,7 +502,8 @@ corrupt:
  * It is assumed that there are no references to the inode in the
  * inode table or in the filesystem.
  */
-i_free(int devno, unsigned ino)
+void
+i_free(int devno, unsigned int ino)
 {
 	register fsptr dev;
 
@@ -522,7 +561,7 @@ blk_alloc(int devno)
 	--dev->s_tfree;
 
 	/* Zero out the new block. */
-	buf = bread(devno, newno, 2);
+	buf = (blkno_t *)bread(devno, newno, 2);
 	bzero(buf, 512);
 	bawrite(buf);
 	return (newno);
@@ -538,6 +577,7 @@ corrupt2:
  * blk_free is given a device number and a block number,
  * and frees the block.
  */
+void
 blk_free(int devno, blkno_t blk)
 {
 	register fsptr dev;
@@ -566,7 +606,8 @@ blk_free(int devno, blkno_t blk)
  * oft_alloc allocates, and possibly frees, entries
  * in the open file table.
  */
-oft_alloc()
+int
+oft_alloc(void)
 {
 	register int j;
 
@@ -585,6 +626,7 @@ oft_alloc()
  * oft_deref dereferences, and possibly frees, entries
  * in the open file table.
  */
+void
 oft_deref(int of)
 {
 	register struct oft *ofptr;
@@ -600,7 +642,8 @@ oft_deref(int of)
 /*
  * uf_alloc finds an unused slot in the user file table.
  */
-uf_alloc()
+int
+uf_alloc(void)
 {
 	register int j;
 
@@ -615,6 +658,7 @@ uf_alloc()
 /*
  * i_ref increases the reference count of the given inode table entry.
  */
+void
 i_ref(inoptr ino)
 {
 	if (++(ino->c_refs) == 2 * ITABSIZE)	/* Arbitrary limit. */
@@ -626,6 +670,7 @@ i_ref(inoptr ino)
  * the table if there are no more references to it.  If it also has no
  * links, the inode itself and its blocks (if not a device) is freed.
  */
+void
 i_deref(inoptr ino)
 {
 	magic(ino);
@@ -657,6 +702,7 @@ i_deref(inoptr ino)
  * wr_inode writes out the given inode in the inode table out to disk,
  * and resets its dirty bit.
  */
+void
 wr_inode(inoptr ino)
 {
 	struct dinode *buf;
@@ -675,6 +721,7 @@ wr_inode(inoptr ino)
 /*
  * isdevice returns true if it points to a device.
  */
+int
 isdevice(inoptr ino)
 {
 	return (ino->c_node.i_mode & 020000);
@@ -683,6 +730,7 @@ isdevice(inoptr ino)
 /*
  * devnum returns the device number of an inode representing a device.
  */
+int
 devnum(inoptr ino)
 {
 	return (*(ino->c_node.i_addr));
@@ -692,6 +740,7 @@ devnum(inoptr ino)
  * f_trunc frees all the blocks associated with the file,
  * if it is a disk file.
  */
+void
 f_trunc(inoptr ino)
 {
 	int dev;
@@ -719,6 +768,7 @@ f_trunc(inoptr ino)
 /*
  * Companion function to f_trunc().
  */
+void
 freeblk(int dev, blkno_t blk, int level)
 {
 	blkno_t *buf;
@@ -830,6 +880,7 @@ bmap(inoptr ip, blkno_t bn, int rwflg)
  * validblk panics if the given block number is not a valid
  * data block for the given device.
  */
+void
 validblk(int dev, blkno_t num)
 {
 	register fsptr devptr;
@@ -839,7 +890,7 @@ validblk(int dev, blkno_t num)
 	if (devptr->s_mounted == 0)
 		panic("validblk: not mounted");
 
-	if (num < devptr->s_isize || num >= devptr->s_fsize)
+	if ((num < devptr->s_isize) || (num >= devptr->s_fsize))
 		panic("validblk: invalid block");
 }
 
@@ -853,16 +904,17 @@ getinode(int uindex)
 	register int oftindex;
 	register inoptr inoindex;
 
-	if (uindex < 0 || uindex >= UFTSIZE || udata.u_files[uindex] & 0x80) {
+	if ((uindex < 0) || (uindex >= UFTSIZE) ||
+	    (udata.u_files[uindex] & 0x80)) {
 		udata.u_error = EBADF;
 		return (NULLINODE);
 	}
 
-	if ((oftindex = udata.u_files[uindex]) < 0 || oftindex >= OFTSIZE)
+	if (((oftindex = udata.u_files[uindex]) < 0) || (oftindex >= OFTSIZE))
 		panic("getinode: bad descriptor table");
 
-	if ((inoindex = of_tab[oftindex].o_inode) < i_tab ||
-	    inoindex >= i_tab + ITABSIZE)
+	if (((inoindex = of_tab[oftindex].o_inode) < i_tab) ||
+	    (inoindex >= i_tab + ITABSIZE))
 		panic("getinode: bad OFT");
 
 	magic(inoindex);
@@ -873,7 +925,8 @@ getinode(int uindex)
 /*
  * super returns true if we are the superuser.
  */
-super()
+int
+super(void)
 {
 	return (udata.u_euid == 0);
 }
@@ -882,12 +935,13 @@ super()
  * getperm looks at the given inode and the effective user/group ids,
  * and returns the effective permissions in the low-order 3 bits.
  */
+int
 getperm(inoptr ino)
 {
 	int mode;
 
 	if (super())
-	return (07);
+		return (07);
 
 	mode = ino->c_node.i_mode;
 	if (ino->c_node.i_uid == udata.u_euid)
@@ -901,6 +955,7 @@ getperm(inoptr ino)
 /*
  * setftime sets the times of the given inode, according to the flags.
  */
+void
 setftime(inoptr ino, int flag)
 {
 	ino->c_dirty = 1;
@@ -916,6 +971,7 @@ setftime(inoptr ino, int flag)
 /*
  * getmode returns the given inode's mode.
  */
+int
 getmode(inoptr ino)
 {
 	return (ino->c_node.i_mode & F_MASK);
@@ -925,6 +981,7 @@ getmode(inoptr ino)
  * fmount places the given device in the mount table with
  * mount point ino.
  */
+int
 fmount(int dev, inoptr ino)
 {
 	char *buf;
@@ -951,6 +1008,7 @@ fmount(int dev, inoptr ino)
 /*
  * magic checks if the given inode is corrupt.
  */
+void
 magic(inoptr ino)
 {
 	if (ino->c_magic != CMAGIC)
