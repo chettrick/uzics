@@ -15,7 +15,7 @@ char *bread();
  * the parents inoptr. Otherwise, parent will be set to NULL.
  */
 inoptr
-n_open(register char *name, register inoptr *parent)
+n_open(char *name, inoptr *parent)
 {
 	register inoptr wd;	/* The directory we are currently searching. */
 	register inoptr ninode;
@@ -96,7 +96,7 @@ nodir:
  * allocated block will be padded with zeroes.
  */
 inoptr
-srch_dir(register inoptr wd, register char *compname)
+srch_dir(inoptr wd, char *compname)
 {
 	register int curentry;
 	register blkno_t curblock;
@@ -131,7 +131,7 @@ srch_dir(register inoptr wd, register char *compname)
  * a pointer to the root of the mounted filesystem.
  */
 inoptr
-srch_mt(register inoptr ino)
+srch_mt(inoptr ino)
 {
 	register int j;
 	inoptr i_open();
@@ -153,15 +153,17 @@ srch_mt(register inoptr ino)
  * An inode # of zero means a newly allocated inode.
  */
 inoptr
-i_open(register int dev, register unsigned ino)
+i_open(int dev, unsigned ino)
 {
 	struct dinode *buf;
 	register inoptr nindex;
 	int i;
 	register inoptr j;
 	int new;
-	static nexti = i_tab;
+	static nexti;
 	unsigned i_alloc();
+
+	nexti = i_tab;
 
 	if (dev < 0 || dev >= NDEVS)
 		panic("i_open: Bad dev");
@@ -234,7 +236,7 @@ badino:
  * there was no space left in the filesystem, or a non-empty oldname
  * was not found, or the user did not have write permission.
  */
-ch_link(register inoptr wd, char *oldname, char *newname, inoptr nindex)
+ch_link(inoptr wd, char *oldname, char *newname, inoptr nindex)
 {
 	struct direct curentry;
 
@@ -315,7 +317,7 @@ filename(char *path)
  * namecomp compares two strings to see if they are the same file name.
  * It stops at 14 chars or a null or a slash, and returns 0 for difference.
  */
-namecomp(register char *n1, register char *n2)
+namecomp(char *n1, char *n2)
 {
 	register int n;
 
@@ -339,7 +341,7 @@ namecomp(register char *n1, register char *n2)
  * Better make sure there isn't already an entry with the same name.
  */
 inoptr
-newfile(register inoptr pino, register char *name)
+newfile(inoptr pino, char *name)
 {
 	register inoptr nindex;
 	register int j;
@@ -375,7 +377,7 @@ nogood:
  * Used when freeing and allocating blocks and inodes.
  */
 fsptr
-getdev(register int devno)
+getdev(int devno)
 {
 	register fsptr dev;
 
@@ -459,7 +461,7 @@ corrupt:
  * It is assumed that there are no references to the inode in the
  * inode table or in the filesystem.
  */
-i_free(register int devno, register unsigned ino)
+i_free(int devno, unsigned ino)
 {
 	register fsptr dev;
 
@@ -479,7 +481,7 @@ i_free(register int devno, register unsigned ino)
  * from it.  A returned block number of zero means no more blocks.
  */
 blkno_t
-blk_alloc(register int devno)
+blk_alloc(int devno)
 {
 	register fsptr dev;
 	register blkno_t newno;
@@ -533,7 +535,7 @@ corrupt2:
  * blk_free is given a device number and a block number,
  * and frees the block.
  */
-blk_free(register int devno, register blkno_t blk)
+blk_free(int devno, blkno_t blk)
 {
 	register fsptr dev;
 	register char *buf;
@@ -580,7 +582,7 @@ oft_alloc()
  * oft_deref dereferences, and possibly frees, entries
  * in the open file table.
  */
-oft_deref(register int of)
+oft_deref(int of)
 {
 	register struct oft *ofptr;
 
@@ -621,7 +623,7 @@ i_ref(inoptr ino)
  * the table if there are no more references to it.  If it also has no
  * links, the inode itself and its blocks (if not a device) is freed.
  */
-i_deref(register inoptr ino)
+i_deref(inoptr ino)
 {
 	magic(ino);
 
@@ -652,7 +654,7 @@ i_deref(register inoptr ino)
  * wr_inode writes out the given inode in the inode table out to disk,
  * and resets its dirty bit.
  */
-wr_inode(register inoptr ino)
+wr_inode(inoptr ino)
 {
 	struct dinode *buf;
 	register blkno_t blkno;
@@ -687,7 +689,7 @@ devnum(inoptr ino)
  * f_trunc frees all the blocks associated with the file,
  * if it is a disk file.
  */
-f_trunc(register inoptr ino)
+f_trunc(inoptr ino)
 {
 	int dev;
 	int j;
@@ -741,7 +743,7 @@ freeblk(int dev, blkno_t blk, int level)
  * The block is zeroed if created.
  */
 blkno_t
-bmap(inoptr ip, register blkno_t bn, int rwflg)
+bmap(inoptr ip, blkno_t bn, int rwflg)
 {
 	register int i;
 	register bufptr bp;
@@ -843,7 +845,7 @@ validblk(int dev, blkno_t num)
  * file descriptor, checking for valid data structures.
  */
 inoptr
-getinode(register int uindex)
+getinode(int uindex)
 {
 	register int oftindex;
 	register inoptr inoindex;
@@ -896,7 +898,7 @@ getperm(inoptr ino)
 /*
  * setftime sets the times of the given inode, according to the flags.
  */
-setftime(register inoptr ino, register int flag)
+setftime(inoptr ino, int flag)
 {
 	ino->c_dirty = 1;
 
@@ -920,7 +922,7 @@ getmode(inoptr ino)
  * fmount places the given device in the mount table with
  * mount point ino.
  */
-fmount(register int dev, register inoptr ino)
+fmount(int dev, inoptr ino)
 {
 	char *buf;
 	register struct filesys *fp;
