@@ -2,10 +2,10 @@
 UZI (Unix Z80 Implementation) Kernel:  devmisc.c
 ***************************************************/
 
-/* XXX - What are the return types */
-
 #include "unix.h"
 #include "extern.h"
+
+extern void	bcopy(char *, char *, int);
 
 static char lop = 0;
 
@@ -29,7 +29,7 @@ int
 lpr_close(void)
 {
 	if (lop) {
-		lop  = 0;
+		lop = 0;
 		lpout('\f');
 		lpout('\f');
 	}
@@ -80,7 +80,3 @@ lpout(char c)
 	out(0xff, 0x86);
 	out(0xff, 0x85);
 }
-
-#if 0	/* Where is devmt.c? */
-#include "devmt.c"
-#endif

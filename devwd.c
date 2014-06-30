@@ -2,8 +2,6 @@
 UZI (Unix Z80 Implementation) Kernel:  devwd.c
 ***************************************************/
 
-/* XXX - what is the return type */
-
 #include "unix.h"
 #include "extern.h"
 
@@ -17,7 +15,7 @@ extern char *dptr;
 extern int dlen;
 extern char *cptr;
 extern int busid;
-extern scsiop();	/* XXX - Not extern? */
+extern scsiop();
 
 int	wd_open(int);
 char	wd_read(unsigned int, int);
@@ -104,8 +102,7 @@ chkstat(int stat, int rdflag)
 	}
 }
 
-/* The following is generic SCSI driver code, also used by devmt.c */
-#if 0	/* XXX - Comment out temporarily. */
+/* The following is generic SCSI driver code. */
 char *dptr;
 int dlen;
 char *cptr;
@@ -113,6 +110,7 @@ int busid;
 
 scsiop()
 {
+#if 0	/* XXX - Comment out temporarily. */
 #asm 8080
 ;
 ;
@@ -216,7 +214,7 @@ EDATA:
 	IN	SCMD
 	ANI	1FH
 	CPI	00100B
-	JNZ	SEQ	;JUMP IF IT DOESN'T WANT TO SEND STATUS
+	JNZ	SEQ	;JUMP IF IT DOES NOT WANT TO SEND STATUS
 ;
 	IN	SDATA
 	MOV	L,A
@@ -315,5 +313,5 @@ WRADR:	DS	2
 WRLEN	EQU $ - WRBLK
 
 #endasm
-}
 #endif
+}
