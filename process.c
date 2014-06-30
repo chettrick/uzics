@@ -24,7 +24,7 @@ init2()
 		*j = -1;
 
 	/* Turn on the clock. */
-	out(02,0xf1);
+	out(02, 0xf1);
 	ei();
 
 	/* Wait for an interrupted clock to set the time of day. */
@@ -161,6 +161,7 @@ swapout()
 	}
 
 	/* Save the stack pointer and critical registers. */
+#if 0	/* XXX - Comment out temorarily. */
 #asm
 	LD	HL,01	;This will return 1 if swapped.
 	PUSH	HL	;Will be the return value.
@@ -170,6 +171,7 @@ swapout()
 	ADD	HL,SP	;Get SP into HL.
 	LD	(stkptr?),HL
 #endasm
+#endif
 	udata.u_sp = stkptr;
 
 	swrite();
@@ -241,6 +243,7 @@ swapin(ptptr pp)
 
 	/* Restore the registers. */
 	stkptr = udata.u_sp;
+#if 0	/* XXX - Comment out temorarily. */
 #asm
 	LD	HL,(stkptr?)
 	LD	SP,HL
@@ -251,6 +254,7 @@ swapin(ptptr pp)
 	OR	L
 	RET		;Return into the context of the swapped-in process.
 #endasm
+#endif
 }
 
 /* Temp storage for dofork. */
@@ -279,6 +283,7 @@ dofork()
 	 * When the process is swapped back in, it will be
 	 * as if it returns with the value of the child's pid.
 	 */
+#if 0	/* XXX - Comment out temorarily. */
 #asm
 	LD	HL,(newid?)
 	PUSH	HL
@@ -288,14 +293,16 @@ dofork()
 	ADD	HL,SP	;Get SP into HL.
 	LD	(stkptr?),HL
 #endasm
+#endif
 	udata.u_sp = stkptr;
 	swrite();
+#if 0	/* XXX - Comment out temorarily. */
 #asm
 	POP	HL	;Repair stack pointer.
 	POP	HL
 	POP	HL
 #endasm
-
+#endif
 	/* Make a new process table entry, etc. */
 	newproc(p);
 
@@ -462,6 +469,7 @@ unix(int16 argn3, int16 argn2, int16 argn1, int16 argn, char *uret, int callno)
 	/* If an error, return errno with carry set. */
 	if (udata.u_error) {
 	;
+#if 0	/* XXX - Comment out temorarily. */
 #asm
 	LD	HL,(udata? + ?OERR)
 	POP	BC	;Restore frame pointer.
@@ -470,6 +478,7 @@ unix(int16 argn3, int16 argn2, int16 argn1, int16 argn, char *uret, int callno)
 	SCF
 	RET
 #endasm
+#endif
 	;
 	}
 	return (udata.u_retval);

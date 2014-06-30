@@ -5,6 +5,11 @@ UZI (Unix Z80 Implementation) Kernel:  machdep.c
 #include "unix.h"
 #include "extern.h"
 
+extern int unix();	/* for doexec(). */
+
+static int cursig;
+static int (*curvec)();
+
 /*
  * fs_init is called at the very beginning to initialize everything.
  * It is the equivalent of main().
@@ -16,7 +21,7 @@ fs_init()
 	initvec();	/* Initialize the interrupt vector. */
 	inint = 0;
 	udata.u_insys = 1;
-	out(0,0xf1);	/* Turn off the clock. */
+	out(0, 0xf1);	/* Turn off the clock. */
 	ei();
 
 	init2();	/* From process.c */
@@ -61,24 +66,29 @@ incrtick(time_t *t)
 
 stkreset()
 {
+#if 0	/* XXX - Comment out temporarily. */
 #asm 8080
 	POP	H
 	LXI	SP,udata?-2
 	PCHL
 #endasm
+#endif
 }
 
 tempstack()
 {
+#if 0	/* XXX - Comment out temporarily. */
 #asm 8080
 	POP	H
 	LXI	SP,100H
 	PCHL
 #endasm
+#endif
 }
 
 initvec()
 {
+#if 0	/* XXX - Comment out temporarily. */
 #asm 8080
 	LXI	H,vector?
 	INX	H
@@ -97,12 +107,12 @@ initvec()
 	MOV	M,D	;Store address of service routine in vector[].
 	RET
 #endasm
+#endif
 }
-/* XXX - This shouldn't be here */
-extern int unix();
 
 doexec()
 {
+#if 0	/* XXX - Comment out temporarily. */
 #asm 8080
 	POP	H
 	POP	H	;Get argument.
@@ -115,11 +125,8 @@ doexec()
 	STA	udata? + ?OSYS
 	JMP	0100H
 #endasm
+#endif
 }
-
-/* XXX - This shouldn't be here */
-static int cursig;
-static int (*curvec)();
 
 /*
  * service is an interrupt device routine that calls the service
@@ -127,6 +134,7 @@ static int (*curvec)();
  */
 service()
 {
+#if 0	/* XXX - Comment out temporarily. */
 #asm 8080
 	PUSH	PSW
 	PUSH	B
@@ -137,6 +145,7 @@ service()
 	PUSH	IY
 .8080
 #endasm
+#endif
 
 	inint = 1;
 
@@ -153,6 +162,7 @@ found:
 	/* Deal with a pending caught signal, if any. */
 	if (!udata.u_insys)
 		calltrap();
+#if 0	/* XXX - Comment out temporarily. */
 #asm 8080
 .Z80
 	POP	IY
@@ -165,6 +175,7 @@ found:
 	EI
 	RET
 #endasm
+#endif
 }
 
 calltrap()
@@ -236,9 +247,11 @@ tread(uint16 port)
  */
 di()
 {
+#if 0	/* XXX - Comment out temporarily. */
 #asm 8080
 	DI	;Disable interrupts.
 #endasm
+#endif
 }
 
 /*
@@ -249,9 +262,11 @@ ei()
 	if (inint)
 		return;
 	;	/* XXX - Empty statement necessary to fool compiler. */
+#if 0	/* XXX - Comment out temporarily. */
 #asm 8080
 	EI	;Enable interrupts.
 #endasm
+#endif
 }
 
 /*
@@ -259,6 +274,7 @@ ei()
  */
 shift8()
 {
+#if 0	/* XXX - Comment out temporarily. */
 #asm 8080
 	POP	D	;Return address.
 	POP	H
@@ -269,6 +285,7 @@ shift8()
 	PUSH	H
 	PUSH	D	;Restore stack.
 #endasm
+#endif
 }
 
 /*
@@ -316,8 +333,7 @@ idump()
 	ptptr pp;
 	extern struct cinode i_tab[];
 
-	kprintf(
-	    "\tMAGIC\tDEV\tNUM\tMODE\tNLINK\t(DEV)\tREFS\tDIRTY err %d root %d\n",
+	kprintf("\tMAGIC\tDEV\tNUM\tMODE\tNLINK\t(DEV)\tREFS\tDIRTY err %d root %d\n",
 	    udata.u_error, root - i_tab);
 
 	for (ip = i_tab; ip < i_tab + ITABSIZE; ++ip) {
