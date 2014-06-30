@@ -23,19 +23,12 @@ extern int		tty_int(void);	/* XXX - Used by machdep.c. */
 extern void		_putc(char);	/* XXX - Used by machdep.c. */
 
 /* devmisc.c */
-extern int		lpr_open(char);
-extern int		lpr_close(char);
+extern int		lpr_open(void);
+extern int		lpr_close(void);
 extern unsigned int	lpr_write(int, int);
 extern unsigned int	mem_read(int, int);
 extern unsigned int	mem_write(int, int);
 extern unsigned int	null_write(int, int);
-
-/* Where is devmt.c? */
-/* devmt.c */
-extern mt_open();
-extern mt_close();
-extern mt_read();
-extern mt_write();
 
 /* The device driver switch table */
 static struct devsw dev_tab[] = {
@@ -47,7 +40,6 @@ static struct devsw dev_tab[] = {
 	{ 0, tty_open, tty_close, tty_read, tty_write, ok },	/* tty */
 	{ 0, ok, ok, ok, null_write, nogood },			/* /dev/null */
 	{ 0, ok, ok, mem_read, mem_write, nogood },		/* /dev/mem */
-	{ 0, mt_open, mt_close, mt_read, mt_write, nogood }
 };
 #endif
 
