@@ -2,7 +2,6 @@
 UZI (Unix Z80 Implementation) Kernel:  devwd.c
 ***************************************************/
 
-/* XXX - unsigned and static what */
 /* XXX - what is the return type */
 
 #include "unix.h"
@@ -18,9 +17,23 @@ extern char *dptr;
 extern int dlen;
 extern char *cptr;
 extern int busid;
-extern scsiop();
+extern scsiop();	/* XXX - Not extern? */
 
-wd_read(unsigned minor, int rawflag)
+int	wd_open(int);
+char	wd_read(unsigned int, int);
+char	wd_write(unsigned int, int);
+
+static	setup(unsigned int, int);
+static	chkstat(int, int);
+
+int
+wd_open(int minor)
+{
+	return (0);
+}
+
+char
+wd_read(unsigned int minor, int rawflag)
 {
 	cmdblk[0] = RDCMD;
 	if (setup(minor, rawflag))
@@ -31,7 +44,8 @@ wd_read(unsigned minor, int rawflag)
 	return (cmdblk[8] << 9);
 }
 
-wd_write(unsigned minor, int rawflag)
+char
+wd_write(unsigned int minor, int rawflag)
 {
 	cmdblk[0] = WRCMD;
 	if (setup(minor, rawflag))
@@ -42,7 +56,7 @@ wd_write(unsigned minor, int rawflag)
 }
 
 static
-setup(unsigned minor, int rawflag)
+setup(unsigned int minor, int rawflag)
 {
 	register blkno_t block;
 
@@ -84,17 +98,14 @@ static
 chkstat(int stat, int rdflag)
 {
 	if (stat) {
-		kprintf("wd %s failure stat %x", rdflag ? "read": "write", stat);
+		kprintf("wd %s failure stat %x",
+		    rdflag ? "read": "write", stat);
 		panic("");
 	}
 }
 
-wd_open(int minor)
-{
-	return (0);
-}
-
 /* The following is generic SCSI driver code, also used by devmt.c */
+#if 0	/* XXX - Comment out temporarily. */
 char *dptr;
 int dlen;
 char *cptr;
@@ -305,3 +316,4 @@ WRLEN	EQU $ - WRBLK
 
 #endasm
 }
+#endif

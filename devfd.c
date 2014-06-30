@@ -13,17 +13,29 @@ extern ei();
 static char ftrack, fsector, ferror;
 static char *fbuf;
 
+int			fd_open(int);
 unsigned int		fd_read(int16, int);
 unsigned int		fd_write(int16, int);
-static unsigned int	fd(int, int, int);
 
-int			fd_open(int);
-int			fd_close(int);
-int			fd_ioctl(int);
+static int		fd_close(int);
+static int		fd_ioctl(int);
+static unsigned int	fd(int, int, int);
 
 static			read();
 static			write();
 static			reset();
+
+int
+fd_open(int minor)
+{
+    if (in(0x80) & 0x81)
+    {
+        udata.u_error = ENXIO;
+        return (-1);
+    }
+    reset();
+    return (0);
+}
 
 unsigned int
 fd_read(int16 minor, int rawflag)
@@ -35,6 +47,18 @@ unsigned int
 fd_write(int16 minor, int rawflag)
 {
     return (fd(0, minor, rawflag));
+}
+
+static int
+fd_close(int minor)
+{
+    return (0);
+}
+
+static int
+fd_ioctl(int minor)
+{
+    return (-1);
 }
 
 static unsigned int
@@ -94,37 +118,12 @@ fd(int rwflag, int minor, int rawflag)
         panic("");
     }
 
-    return(nblocks);
+    return (nblocks);
 }
 
-int
-fd_open(int minor)
-{
-    if (in(0x80) & 0x81)
-    {
-        udata.u_error = ENXIO;
-        return (-1);
-    }
-    reset();
-    return (0);
-}
-
-int
-fd_close(int minor)
-{
-    return (0);
-}
-
-int
-fd_ioctl(int minor)
-{
-    return (-1);
-}
-
-/* XXX - Comment out temporarily.
+#if 0	/* XXX - Comment out temporarily. */
 #asm 8080
-; ALL THE FUNCTIONS IN HERE ARE STATIC TO THIS PACKAGE
-
+;ALL THE FUNCTIONS IN HERE ARE STATIC TO THIS PACKAGE
 ;
 ;THESE ARE 1771 FLOPPY DISK CONTROLLER COMMANDS,
 ;I/O PORT ADDRESSES, AND FLAG MASKS:
@@ -142,7 +141,6 @@ DATA    EQU     83H
 BUSY    EQU     01
 RDMASK  EQU     10011111B
 WRMASK  EQU     0FFH
-;
 ;
 ;THIS FLOPPY READ ROUTINE CALLS FREAD2. IF THE
 ;READ IS UNSUCCESSFUL, THE DRIVE IS HOMED,
@@ -234,7 +232,7 @@ FWR2:   CALL    FWAIT
         JZ      FWR4    ;IF TRACK CORRECT
         CALL    FTKSET
         CALL    FWAIT
-        LXI     H,30    ;15MS DELAY
+        LXI     H,30    ;15 MS DELAY
         CALL    DELAY
         JMP     FWR4
 FWR5:   CALL    FTKSET
@@ -305,14 +303,12 @@ FHOME:  PUSH    B
         POP     B
         RET
 ;
-        
-
 ;THIS IS USED IN SEVERAL PLACES. IT GIVES
-; ( .5 * HL ) MILLISECONDS OF DELAY.
+;(0.5 * HL) MILLISECONDS OF DELAY.
 ;
 DELAY:  MVI     B,154
 .Z80
-DELAY1: DJNZ    DELAY1  ;.5 MS DELAY
+DELAY1: DJNZ    DELAY1  ;0.5 MS DELAY
 .8080
         DCX     H
         MOV     A,H
@@ -322,4 +318,4 @@ DELAY1: DJNZ    DELAY1  ;.5 MS DELAY
 
 TRYNUM: DS      1
 #endasm
-*/
+#endif

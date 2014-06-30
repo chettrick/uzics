@@ -22,6 +22,28 @@ struct s_queue ttyinq = {
 int stopflag;	/* Flag for ^S/^Q */
 int flshflag;	/* Flag for ^O */
 
+int		tty_open(int);
+int		tty_close(int);
+int		tty_read(int16, int16);
+int		tty_write(int16, int16);
+int		tty_int(void);		/* XXX - Used by machdep.c. */
+void		_putc(char);		/* XXX - Used by machdep.c. */
+
+static int	tty_ioctl(int);
+
+int
+tty_open(int minor)
+{
+	return (0);
+}
+
+int
+tty_close(int minor)
+{
+	return (0);
+}
+
+int
 tty_read(int16 minor, int16 rawflag)
 {
 	int nread;
@@ -40,7 +62,7 @@ tty_read(int16 minor, int16 rawflag)
 			}
 		}
 		ei();   
-		if (nread++ == 0 && *udata.u_base == '\004')	/* ^D */
+		if ((nread++ == 0) && (*udata.u_base == '\004'))	/* ^D */
 			return (0);
 		if (*udata.u_base == '\n')
 			break;
@@ -49,6 +71,7 @@ tty_read(int16 minor, int16 rawflag)
 	return (nread);
 }
 
+int
 tty_write(int16 minor, int16 rawflag)
 {
 	int towrite;
@@ -56,7 +79,8 @@ tty_write(int16 minor, int16 rawflag)
 	towrite = udata.u_count;
 
 	while (udata.u_count-- != 0) {
-		for (;;) {	/* Wait on the ^S/^Q flag */
+		/* Wait on the ^S/^Q flag. */
+		for (;;) {
 			di();
 			ifnot (stopflag)    
 				break;
@@ -78,16 +102,7 @@ tty_write(int16 minor, int16 rawflag)
 	return (towrite);
 }
 
-tty_open(int minor)
-{
-	return (0);
-}
-
-tty_close(int minor)
-{
-	return (0);
-}
-
+static int
 tty_ioctl(int minor)
 {
 	return (-1);
@@ -100,7 +115,8 @@ tty_ioctl(int minor)
  * return.  If the queue contains a full line, it wakes up anything
  * waiting on it.  If it is totally full, it beeps at the user.
  */
-tty_int()
+int
+tty_int(void)
 {
 	register char c;
 	register found;
@@ -110,7 +126,7 @@ tty_int()
 again:
 	if ((in(0x72) & 0x81) != 0x81)
 		return (found);
-	c = in(0x73) & 0x7f;
+	c = (in(0x73) & 0x7f);
 
 	if (c == 0x1a)			/* ^Z */
 		idump();		/* For debugging. */
@@ -126,17 +142,17 @@ again:
 		wakeup(&stopflag);
 	} else if (c == '\b') {
 		if (uninsq(&ttyinq, &oc)) {
-			if (oc == '\n')
+			if (oc == '\n') {
 				/* Don't erase past newline. */
 				insq(&ttyinq, oc);
-			else {
+			} else {
 				_putc('\b');
 				_putc(' ');
 				_putc('\b');
 			}
 		}
 	} else {
-		if (c == '\r' || c == '\n') {
+		if ((c == '\r') || (c == '\n')) {
 			c = '\n';
 			_putc('\r');
 		}
@@ -147,7 +163,7 @@ again:
 			_putc('\007');	/* Beep if no more room. */
 	}
 
-	if (c == '\n' || c == '\004')	/* ^D */
+	if ((c == '\n') || (c == '\004'))	/* ^D */
 		wakeup(&ttyinq);
 
 	found = 1;
@@ -156,11 +172,13 @@ again:
 
 /* XXX - Remove vax specific code */
 #ifdef vax
+void
 _putc(char c)
 {
 	write(1, &c, 1);
 }
 #else
+void
 _putc(char c)
 {
 	while (!(in(0x72) & 02))
