@@ -5,44 +5,45 @@ UZI (Unix Z80 Implementation) Kernel:  filesys.c
 #include "unix.h"
 #include "extern.h"
 
-extern void	bcopy(const void *, void *, int);
-extern void	bzero(void *, int);
+extern void		bcopy(const void *, void *, int);
+extern void		bzero(void *, int);
 
-char *		bread();
+char *			bread();
 
-inoptr		n_open(char *, inoptr *);
-inoptr		srch_dir(inoptr, char *);
-inoptr		srch_mt(inoptr);
-inoptr		i_open(int, unsigned int);
-int		ch_link(inoptr, char *, char *, inoptr);
-char *		filename(char *);
-int		namecomp(char *, char *);
-inoptr		newfile(inoptr, char *);
-fsptr		getdev(int);
-int		baddev(fsptr);
-unsigned int	i_alloc(int);
-void		i_free(int, unsigned int);
-blkno_t		blk_alloc(int);
-void		blk_free(int, blkno_t);
-int		oft_alloc(void);
-void		oft_deref(int);
-int		uf_alloc(void);
-void		i_ref(inoptr);
-void		i_deref(inoptr);
-void		wr_inode(inoptr);
-int		isdevice(inoptr);
-int		devnum(inoptr);
-void		f_trunc(inoptr);
-void		freeblk(int, blkno_t, int);
-blkno_t		bmap(inoptr, blkno_t, int);
-void		validblk(int, blkno_t);
-inoptr		getinode(int);
-int		super(void);
-int		getperm(inoptr);
-void		setftime(inoptr, int);
-int		getmode(inoptr);
-int		fmount(int, inoptr);
-void		magic(inoptr);
+inoptr			n_open(char *, inoptr *);
+inoptr			i_open(int, unsigned int);
+int			ch_link(inoptr, char *, char *, inoptr);
+char *			filename(char *);
+inoptr			newfile(inoptr, char *);
+int			oft_alloc(void);
+void			oft_deref(int);
+int			uf_alloc(void);
+void			i_ref(inoptr);
+void			i_deref(inoptr);
+void			wr_inode(inoptr);
+int			isdevice(inoptr);
+int			devnum(inoptr);
+void			f_trunc(inoptr);
+blkno_t			bmap(inoptr, blkno_t, int);
+inoptr			getinode(int);
+int			super(void);
+int			getperm(inoptr);
+void			setftime(inoptr, int);
+int			getmode(inoptr);
+int			fmount(int, inoptr);
+
+static inoptr		srch_dir(inoptr, char *);
+static inoptr		srch_mt(inoptr);
+static int		namecomp(char *, char *);
+static fsptr		getdev(int);
+static int		baddev(fsptr);
+static unsigned int	i_alloc(int);
+static void		i_free(int, unsigned int);
+static blkno_t		blk_alloc(int);
+static void		blk_free(int, blkno_t);
+static void		freeblk(int, blkno_t, int);
+static void		validblk(int, blkno_t);
+static void		magic(inoptr);
 
 /*
  * n_open is given a string containing a path name,

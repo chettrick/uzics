@@ -5,11 +5,47 @@ UZI (Unix Z80 Implementation) Kernel:  machdep.c
 #include "unix.h"
 #include "extern.h"
 
+/*
+ * Port addresses of clock chip registers.
+ */
+#define SECS	0xe2
+#define MINS	0xe3
+#define HRS	0xe4
+#define DAY	0xe6
+#define MON	0xe7
+#define YEAR	86
+
 extern int	unix();		/* for doexec(). */
 extern void	abort(void);
 
 static int	cursig;
 static int	(*curvec)();
+
+int		main(void);
+int		valadr(char *, uint16);
+void		addtick(time_t *, time_t *);
+void		incrtick(time_t *);
+
+static void	stkreset(void);
+void		tempstack(void);
+static void	initvec(void);
+void		doexec(void);
+static void	service(void);
+void		di(void);
+void		ei(void);
+static void	shift8(void);
+
+void		calltrap(void);
+void		sttime(void);
+void		rdtime(time_t *);
+void		rdtod(void);
+int		tread(uint16);
+void		panic(char *);
+void		warning(char *);
+void		puts(char *);
+void		kputchar(int);
+void		idump(void);
+void		kprintf();
 
 /*
  * main() is called at the very beginning to initialize everything.
@@ -46,6 +82,7 @@ valadr(char *base, uint16 size)
  * addtick adds two tick counts together.  The t_time field holds
  * up to one second of ticks, while the t_date field counts minutes.
  */
+void
 addtick(time_t *t1, time_t *t2)
 {
 	t1->t_time += t2->t_time;
@@ -59,6 +96,7 @@ addtick(time_t *t1, time_t *t2)
 /*
  * incrtick counts seconds and minutes.
  */
+void
 incrtick(time_t *t)
 {
 	if (++t->t_time == 60 * TICKSPERSEC) {
@@ -67,7 +105,8 @@ incrtick(time_t *t)
 	}
 }
 
-stkreset()
+static void
+stkreset(void)
 {
 #if 0	/* XXX - Comment out temporarily. */
 #asm 8080
@@ -78,7 +117,8 @@ stkreset()
 #endif
 }
 
-tempstack()
+void
+tempstack(void)
 {
 #if 0	/* XXX - Comment out temporarily. */
 #asm 8080
@@ -89,7 +129,8 @@ tempstack()
 #endif
 }
 
-initvec()
+static void
+initvec(void)
 {
 #if 0	/* XXX - Comment out temporarily. */
 #asm 8080
@@ -112,8 +153,8 @@ initvec()
 #endasm
 #endif
 }
-
-doexec()
+void
+doexec(void)
 {
 #if 0	/* XXX - Comment out temporarily. */
 #asm 8080
@@ -135,7 +176,8 @@ doexec()
  * service is an interrupt device routine that calls the service
  * routine of each device that could have interrupted.
  */
-service()
+static void
+service(void)
 {
 #if 0	/* XXX - Comment out temporarily. */
 #asm 8080
@@ -181,14 +223,14 @@ found:
 #endif
 }
 
-calltrap()
+void
+calltrap(void)
 {
 	/*
 	 * Deal with a pending caught signal, if any.
 	 * udata.u_insys should be false, and interrupts enabled.
 	 * Remember, the user may never return from the trap routine.
 	 */
-
 	if (udata.u_cursig) {
 		cursig = udata.u_cursig;
 		curvec = udata.u_sigvec[cursig];
@@ -201,21 +243,13 @@ calltrap()
 	} 
 }
 
-/*
- * Port addresses of clock chip registers.
- */
-#define SECS 0xe2
-#define MINS 0xe3
-#define HRS 0xe4
-#define DAY 0xe6
-#define MON 0xe7
-#define YEAR 86
-
-sttime()
+void
+sttime(void)
 {
 	panic("Calling sttime");
 }
 
+void
 rdtime(time_t *tloc)
 {
 	di();
@@ -227,16 +261,18 @@ rdtime(time_t *tloc)
 /*
  * rdtod updates the global time of day.
  */
-rdtod()
+void
+rdtod(void)
 {
-	tod.t_time = (tread(SECS) >> 1) | (tread(MINS) << 5)
-	    | (tread(HRS) << 11);
+	tod.t_time = (tread(SECS) >> 1) | (tread(MINS) << 5) |
+	    (tread(HRS) << 11);
 	tod.t_date = tread(DAY) | (tread(MON) << 5) | (YEAR << 9);
 }
 
 /*
  * tread reads the BCD clock register and converts it to binary.
  */
+int
 tread(uint16 port)
 {
 	int n;
@@ -277,7 +313,8 @@ ei(void)
 /*
  * shift8 shifts an unsigned int right 8 places.
  */
-shift8()
+static void
+shift8(void)
 {
 #if 0	/* XXX - Comment out temporarily. */
 #asm 8080
@@ -296,6 +333,7 @@ shift8()
 /*
  * panic prints an error message and dies.
  */
+void
 panic(char *s)
 {
 	di();
@@ -308,6 +346,7 @@ panic(char *s)
 /*
  * warning prints a warning message.
  */
+void
 warning(char *s)
 {
 	kprintf("WARNING: %s\n", s);
@@ -316,13 +355,14 @@ warning(char *s)
 /*
  * puts sends the given string to stdout.
  */
+void
 puts(char *s)
 {
 	while (*s)
 		kputchar(*(s++));
 }
 
-/* XXX - Some sort of crazy UNIX to DOS conversion :s */
+void
 kputchar(int c)
 {
 	if (c == '\n')
@@ -332,7 +372,8 @@ kputchar(int c)
 		puts("\177\177\177\177\177\177\177\177\177\177");
 }
 
-idump()
+void
+idump(void)
 {
 	inoptr ip;
 	ptptr pp;
@@ -373,15 +414,18 @@ idump()
 /*
  * kprintf is a short version of printf to save space.
  */
+void
 kprintf(nargs)
 {
-	char **arg, *fmt;
+	char **arg;
+	char *fmt;
+	char s[7];
+	char *itob();
 	int c, base;
-	char s[7], *itob();
 
 	arg = (char **)&nargs + nargs;
 	fmt = *arg;
-	while (c = *fmt++) {
+	while ((c = *fmt++) != 0) {
 		if (c != '%') {
 			kputchar(c);
 			continue;

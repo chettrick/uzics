@@ -73,7 +73,7 @@ bread(int dev, blkno_t blk, int rewrite)
 	bufptr bfind();
 	bufptr freebuf();
 
-	if (bp = bfind(dev, blk)) {
+	if ((bp = bfind(dev, blk)) != 0) {
 		if (bp->bf_busy)
 			panic("want busy block");
 		goto done;

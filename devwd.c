@@ -5,24 +5,25 @@ UZI (Unix Z80 Implementation) Kernel:  devwd.c
 #include "unix.h"
 #include "extern.h"
 
-#define LUN 1
-#define RDCMD 0x28
-#define WRCMD 0x2a
+#define LUN	1
+#define RDCMD	0x28
+#define WRCMD	0x2a
 
-static char cmdblk[10] = { 0, LUN << 5, 0, 0, 0, 0, 0, 0, 0, 0 }; 
+extern		scsiop();
 
-extern char *dptr;
-extern int dlen;
-extern char *cptr;
-extern int busid;
-extern scsiop();
+extern char *	dptr;
+extern int	dlen;
+extern char *	cptr;
+extern int	busid;
 
-int	wd_open(int);
-char	wd_read(unsigned int, int);
-char	wd_write(unsigned int, int);
+int		wd_open(int);
+char		wd_read(unsigned int, int);
+char		wd_write(unsigned int, int);
 
-static	setup(unsigned int, int);
-static	chkstat(int, int);
+static int	setup(unsigned int, int);
+static void	chkstat(int, int);
+
+static char	cmdblk[10] = { 0, LUN << 5, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 int
 wd_open(int minor)
@@ -53,7 +54,7 @@ wd_write(unsigned int minor, int rawflag)
 	return (cmdblk[8] << 9);
 }
 
-static
+static int
 setup(unsigned int minor, int rawflag)
 {
 	blkno_t block;
@@ -92,8 +93,8 @@ setup(unsigned int minor, int rawflag)
 	return (0);
 }
 
-static
-chkstat(int stat, int rdflag)
+static void
+	chkstat(int stat, int rdflag)
 {
 	if (stat) {
 		kprintf("wd %s failure stat %x",
@@ -103,10 +104,10 @@ chkstat(int stat, int rdflag)
 }
 
 /* The following is generic SCSI driver code. */
-char *dptr;
-int dlen;
-char *cptr;
-int busid;
+char *	dptr;
+int	dlen;
+char *	cptr;
+int	busid;
 
 scsiop()
 {
