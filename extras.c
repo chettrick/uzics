@@ -2,12 +2,12 @@
 UZI (Unix Z80 Implementation) Kernel:  extras.c
 ***************************************************/
 
-void bcopy(void *, void *, int);
-void bzero(void *, int);
-void abort(void);
+void	bcopy(const void *, void *, int);
+void	bzero(void *, int);
+void 	abort(void);
 
 void
-bcopy(void *src, void *dest, int count)
+bcopy(const void *src, void *dest, int count)
 {
 #if 0	/* XXX - Comment out temporarily. */
 #asm 8080

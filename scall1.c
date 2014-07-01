@@ -5,7 +5,7 @@ UZI (Unix Z80 Implementation) Kernel:  scall1.c
 #include "unix.h"
 #include "extern.h"
 
-extern void	bcopy(void *, void *, int);
+extern void	bcopy(const void *, void *, int);
 
 /*******************************************
 open(char *name, register int16 flag)

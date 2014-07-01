@@ -5,8 +5,8 @@ UZI (Unix Z80 Implementation) Kernel:  machdep.c
 #include "unix.h"
 #include "extern.h"
 
-extern int unix();	/* for doexec(). */
-extern void abort();
+extern int	unix();		/* for doexec(). */
+extern void	abort(void);
 
 static int cursig;
 static int (*curvec)();

@@ -5,7 +5,7 @@ UZI (Unix Z80 Implementation) Kernel:  devmisc.c
 #include "unix.h"
 #include "extern.h"
 
-extern void	bcopy(char *, char *, int);
+extern void	bcopy(const void *, void *, int);
 
 static char lop = 0;
 
