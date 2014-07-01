@@ -259,7 +259,8 @@ di()
 /*
  * ei enables interrupts if its not in a service routine.
  */
-ei()
+void
+ei(void)
 {
 	if (inint)
 		return;

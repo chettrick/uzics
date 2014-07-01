@@ -5,10 +5,10 @@ UZI (Unix Z80 Implementation) Kernel:  devfd.c
 #include "unix.h"
 #include "extern.h"
 
-extern ei();
+extern void	ei(void);
 
-#define NUMTRKS	76
-#define NUMSECS	26
+#define NUMTRKS 76
+#define NUMSECS 26
 
 static char ftrack, fsector, ferror;
 static char *fbuf;
@@ -28,97 +28,87 @@ static			reset();
 int
 fd_open(int minor)
 {
-    if (in(0x80) & 0x81)
-    {
-        udata.u_error = ENXIO;
-        return (-1);
-    }
-    reset();
-    return (0);
+	if (in(0x80) & 0x81) {
+		udata.u_error = ENXIO;
+		return (-1);
+	}
+	reset();
+	return (0);
 }
 
 unsigned int
 fd_read(int16 minor, int rawflag)
 {
-    return (fd(1, minor, rawflag));
+	return (fd(1, minor, rawflag));
 }
 
 unsigned int
 fd_write(int16 minor, int rawflag)
 {
-    return (fd(0, minor, rawflag));
+	return (fd(0, minor, rawflag));
 }
 
 static int
 fd_close(int minor)
 {
-    return (0);
+	return (0);
 }
 
 static int
 fd_ioctl(int minor)
 {
-    return (-1);
+	return (-1);
 }
 
 static unsigned int
 fd(int rwflag, int minor, int rawflag)
 {
-    register unsigned nblocks;
-    register unsigned firstblk;
+	register unsigned nblocks;
+	register unsigned firstblk;
 
-    if (rawflag)
-    {
-        if (rawflag == 2)
-        {
-            nblocks = swapcnt >> 7;
-            fbuf = swapbase;
-            firstblk = 4*swapblk;
-        }
-        else
-        {
-            nblocks = udata.u_count >> 7;
-            fbuf = udata.u_base;
-            firstblk = udata.u_offset.o_blkno * 4;
-        }       
-    }
-    else
-    {
-        nblocks = 4;
-        fbuf = udata.u_buf->bf_data;
-        firstblk = udata.u_buf->bf_blk * 4;
-    }
+	if (rawflag) {
+		if (rawflag == 2) {
+			nblocks = swapcnt >> 7;
+			fbuf = swapbase;
+			firstblk = swapblk * 4;
+		} else {
+			nblocks = udata.u_count >> 7;
+			fbuf = udata.u_base;
+			firstblk = udata.u_offset.o_blkno * 4;
+		}
+	} else {
+		nblocks = 4;
+		fbuf = udata.u_buf->bf_data;
+		firstblk = udata.u_buf->bf_blk * 4;
+	}
 
-    ftrack = firstblk / 26; 
-    fsector = firstblk % 26 + 1;
-    ferror = 0;
+	ftrack = firstblk / 26; 
+	fsector = firstblk % 26 + 1;
+	ferror = 0;
 
-    for (;;)
-    {
-        if (rwflag)
-            read();
-        else
-            write();
+	for (;;) {
+		if (rwflag)
+			read();
+		else
+			write();
 
-        ifnot (--nblocks)
-            break;
+		ifnot (--nblocks)
+			break;
 
-        if (++fsector == 27)
-        {
-            fsector = 1;
-            ++ftrack;
-        }
-        fbuf += 128;
-    }
+		if (++fsector == 27) {
+			fsector = 1;
+			++ftrack;
+		}
+		fbuf += 128;
+	}
 
-    if (ferror)
-    {
-        kprintf("fd_%s: error %d track %d sector %d\n",
-                    rwflag?"read":"write", ferror, ftrack, fsector);
-        panic("");
-    }
+	if (ferror) {
+		kprintf("fd_%s: error %d track %d sector %d\n",
+		    rwflag ? "read" : "write", ferror, ftrack, fsector);
+		panic("");
+	}
 
-    return (nblocks);
+	return (nblocks);
 }
 
 #if 0	/* XXX - Comment out temporarily. */
