@@ -8,7 +8,7 @@ UZI (Unix Z80 Implementation) Kernel:  scall1.c
 extern void	bcopy(const void *, void *, int);
 
 /*******************************************
-open(char *name, register int16 flag)
+open(char *name, int16 flag)
 *********************************************/
 
 #define name (char *)udata.u_argn1
@@ -17,9 +17,9 @@ open(char *name, register int16 flag)
 _open()
 {
 	int16 uindex;
-	register int16 oftindex;
-	register inoptr ino;
-	register int16 perm;
+	int16 oftindex;
+	inoptr ino;
+	int16 perm;
 	inoptr n_open();
 
 	if (flag < 0 || flag > 2) {
@@ -88,7 +88,7 @@ _close()
 
 doclose(int16 uindex)
 {
-	register int16 oftindex;
+	int16 oftindex;
 	inoptr ino;
 	inoptr getinode();
 
@@ -115,11 +115,11 @@ creat(char *name, int16 mode)
 
 _creat()
 {
-	register inoptr ino;
-	register int16 uindex;
-	register int16 oftindex;
+	inoptr ino;
+	int16 uindex;
+	int16 oftindex;
 	inoptr parent;
-	register int16 j;
+	int16 j;
 	inoptr n_open();
 	inoptr newfile();
 
@@ -192,8 +192,8 @@ pipe(int fildes[])
 
 _pipe()
 {
-	register int16 u1, u2, oft1, oft2;
-	register inoptr ino;
+	int16 u1, u2, oft1, oft2;
+	inoptr ino;
 	inoptr i_open();
 
 	if ((u1 = uf_alloc()) == -1)
@@ -253,8 +253,8 @@ link(char *name1, char *name2)
 
 _link()
 {
-	register inoptr ino;
-	register inoptr ino2;
+	inoptr ino;
+	inoptr ino2;
 	inoptr parent2;
 	char *filename();
 	inoptr n_open();
@@ -311,7 +311,7 @@ unlink(char *path)
 
 _unlink()
 {
-	register inoptr ino;
+	inoptr ino;
 	inoptr pino;
 	char *filename();
 	inoptr i_open();
@@ -360,7 +360,7 @@ read(int16 d, char *buf, uint16 nbytes)
 
 _read()
 {
-	register inoptr ino;
+	inoptr ino;
 	inoptr rwsetup();
 
 	/* Set up u_base, u_offset, ino; check permissions, file num. */
@@ -386,7 +386,7 @@ write(int16 d, char *buf, uint16 nbytes)
 
 _write()
 {
-	register inoptr ino;
+	inoptr ino;
 	off_t *offp;
 	inoptr rwsetup();
 
@@ -406,8 +406,8 @@ _write()
 inoptr
 rwsetup(int rwflag)
 {
-	register inoptr ino;
-	register struct oft *oftp;
+	inoptr ino;
+	struct oft *oftp;
 	inoptr getinode();
 
 	udata.u_base = (char *)udata.u_argn1;	/* buf */
@@ -431,12 +431,12 @@ rwsetup(int rwflag)
 }
 
 /* XXX - needs more i/o error handling. */
-readi(register inoptr ino)
+readi(inoptr ino)
 {
-	register uint16 amount;
-	register uint16 toread;
-	register blkno_t pblk;
-	register char *bp;
+	uint16 amount;
+	uint16 toread;
+	blkno_t pblk;
+	char *bp;
 	int dev;
 	int ispipe;
 	char *bread();
@@ -501,11 +501,11 @@ loop:
 }
 
 /* XXX - needs more i/o error handling. */
-writei(register inoptr ino)
+writei(inoptr ino)
 {
-	register uint16 amount;
-	register uint16 towrite;
-	register char *bp;
+	uint16 amount;
+	uint16 towrite;
+	char *bp;
 	int ispipe;
 	blkno_t pblk;
 	int created;	/* Set by bmap if newly allocated block used. */
@@ -618,7 +618,7 @@ addoff(off_t *ofptr, int amount)
 
 updoff()
 {
-	register off_t *offp;
+	off_t *offp;
 
 	/* Update current file pointer. */
 	offp = &of_tab[udata.u_files[udata.u_argn2]].o_ptr;
@@ -636,9 +636,9 @@ seek(int16 file, uint16 offset, int16 flag)
 
 _seek()
 {
-	register inoptr ino;
-	register int16 oftno;
-	register uint16 retval;
+	inoptr ino;
+	int16 oftno;
+	uint16 retval;
 	inoptr getinode();
 
 	if ((ino = getinode(file)) == NULLINODE)
@@ -703,7 +703,7 @@ chdir(char *dir)
 
 _chdir()
 {
-	register inoptr newcwd;
+	inoptr newcwd;
 	inoptr n_open();
 
 	ifnot (newcwd = n_open(dir, NULLINOPTR))
@@ -731,7 +731,7 @@ mknod(char *name, int16 mode, int16 dev)
 
 _mknod()
 {
-	register inoptr ino;
+	inoptr ino;
 	inoptr parent;
 	inoptr n_open();
 	inoptr newfile();
@@ -781,9 +781,9 @@ sync()
 
 _sync()
 {
-	register j;
-	register inoptr ino;
-	register char *buf;
+	int j;
+	inoptr ino;
+	char *buf;
 	char *bread();
 
 	/* Write out modified inodes. */
@@ -817,10 +817,10 @@ access(char *path, int16 mode)
 
 _access()
 {
-	register inoptr ino;
-	register int16 euid;
-	register int16 egid;
-	register int16 retval;
+	inoptr ino;
+	int16 euid;
+	int16 egid;
+	int16 retval;
 	inoptr n_open();
 
 	if ((mode & 07) && !*(path)) {
@@ -896,7 +896,7 @@ chown(char *path, int owner, int group)
 
 _chown()
 {
-	register inoptr ino;
+	inoptr ino;
 	inoptr n_open();
 
 	ifnot (ino = n_open(path, NULLINOPTR))
@@ -928,7 +928,7 @@ stat(char *path, char *buf)
 
 _stat()
 {
-	register inoptr ino;
+	inoptr ino;
 	inoptr n_open();
 
 	ifnot (valadr(buf, sizeof(struct stat)) &&
@@ -952,7 +952,7 @@ fstat(int16 fd, char *buf)
 
 _fstat()
 {
-	register inoptr ino;
+	inoptr ino;
 	inoptr getinode();
 
 	ifnot (valadr(buf, sizeof(struct stat)))
@@ -985,7 +985,7 @@ dup(int16 oldd)
 
 _dup()
 {
-	register int newd;
+	int newd;
 	inoptr getinode();
 
 	if (getinode(oldd) == NULLINODE)
@@ -1041,7 +1041,7 @@ umask(int mask)
 
 _umask()
 {
-	register int omask;
+	int omask;
 
 	omask = udata.u_mask;
 	udata.u_mask = mask & 0777;
@@ -1088,8 +1088,8 @@ ioctl(int fd, int request, char *data)
 
 _ioctl()
 {
-	register inoptr ino;
-	register int dev;
+	inoptr ino;
+	int dev;
 	inoptr getinode();
 
 	if ((ino = getinode(fd)) == NULLINODE)
@@ -1128,8 +1128,8 @@ mount(char *spec, char *dir, int rwflag)
 
 _mount()
 {
-	register inoptr sino, dino;
-	register int dev;
+	inoptr sino, dino;
+	int dev;
 	inoptr n_open();
 
 	ifnot (super()) {
@@ -1196,9 +1196,9 @@ umount(char *spec)
 
 _umount()
 {
-	register inoptr sino;
-	register int dev;
-	register inoptr ptr;
+	inoptr sino;
+	int dev;
+	inoptr ptr;
 	inoptr n_open();
 
 	ifnot (super()) {

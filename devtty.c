@@ -118,8 +118,8 @@ tty_ioctl(int minor)
 int
 tty_int(void)
 {
-	register char c;
-	register found;
+	char c;
+	int found;
 	char oc;
 
 	found = 0;

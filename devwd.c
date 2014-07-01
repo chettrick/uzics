@@ -56,7 +56,7 @@ wd_write(unsigned int minor, int rawflag)
 static
 setup(unsigned int minor, int rawflag)
 {
-	register blkno_t block;
+	blkno_t block;
 
 	cptr = cmdblk;
 	busid = 1;

@@ -54,9 +54,9 @@ void		magic(inoptr);
 inoptr
 n_open(char *name, inoptr *parent)
 {
-	register inoptr wd;	/* The directory we are currently searching. */
-	register inoptr ninode;
-	register inoptr temp;
+	inoptr wd;	/* The directory we are currently searching. */
+	inoptr ninode;
+	inoptr temp;
 	inoptr srch_dir();
 	inoptr srch_mt();
 
@@ -135,10 +135,10 @@ nodir:
 inoptr
 srch_dir(inoptr wd, char *compname)
 {
-	register int curentry;
-	register blkno_t curblock;
-	register struct direct *buf;
-	register int nblocks;
+	int curentry;
+	blkno_t curblock;
+	struct direct *buf;
+	int nblocks;
 	unsigned inum;
 	inoptr i_open();
 	blkno_t bmap();
@@ -170,7 +170,7 @@ srch_dir(inoptr wd, char *compname)
 inoptr
 srch_mt(inoptr ino)
 {
-	register int j;
+	int j;
 	inoptr i_open();
 
 	for (j = 0; j < NDEVS; ++j) {
@@ -193,9 +193,9 @@ inoptr
 i_open(int dev, unsigned int ino)
 {
 	struct dinode *buf;
-	register inoptr nindex;
+	inoptr nindex;
 	int i;
-	register inoptr j;
+	inoptr j;
 	int new;
 	static nexti;
 	unsigned i_alloc();
@@ -341,7 +341,7 @@ ch_link(inoptr wd, char *oldname, char *newname, inoptr nindex)
 char *
 filename(char *path)
 {
-	register char *ptr;
+	char *ptr;
 
 	ptr = path;
 	while (*ptr)
@@ -359,7 +359,7 @@ filename(char *path)
 int
 namecomp(char *n1, char *n2)
 {
-	register int n;
+	int n;
 
 	n = 14;
 	while (*n1 && *n1 != '/') {
@@ -383,8 +383,8 @@ namecomp(char *n1, char *n2)
 inoptr
 newfile(inoptr pino, char *name)
 {
-	register inoptr nindex;
-	register int j;
+	inoptr nindex;
+	int j;
 	inoptr i_open();
 
 	ifnot (nindex = i_open(pino->c_dev, 0))
@@ -419,7 +419,7 @@ nogood:
 fsptr
 getdev(int devno)
 {
-	register fsptr dev;
+	fsptr dev;
 
 	dev = fs_tab + devno;
 	if (devno < 0 || devno >= NDEVS || !dev->s_mounted)
@@ -448,8 +448,8 @@ i_alloc(int devno)
 	fsptr dev;
 	blkno_t blk;
 	struct dinode *buf;
-	register int j;
-	register int k;
+	int j;
+	int k;
 	unsigned int ino;
 
 	if (baddev(dev = getdev(devno)))
@@ -505,7 +505,7 @@ corrupt:
 void
 i_free(int devno, unsigned int ino)
 {
-	register fsptr dev;
+	fsptr dev;
 
 	if (baddev(dev = getdev(devno)))
 		return;
@@ -525,10 +525,10 @@ i_free(int devno, unsigned int ino)
 blkno_t
 blk_alloc(int devno)
 {
-	register fsptr dev;
-	register blkno_t newno;
+	fsptr dev;
+	blkno_t newno;
 	blkno_t *buf;
-	register int j;
+	int j;
 
 	if (baddev(dev = getdev(devno)))
 		goto corrupt2;
@@ -580,8 +580,8 @@ corrupt2:
 void
 blk_free(int devno, blkno_t blk)
 {
-	register fsptr dev;
-	register char *buf;
+	fsptr dev;
+	char *buf;
 
 	ifnot (blk)
 		return;
@@ -609,7 +609,7 @@ blk_free(int devno, blkno_t blk)
 int
 oft_alloc(void)
 {
-	register int j;
+	int j;
 
 	for (j = 0; j < OFTSIZE; ++j) {
 		ifnot (of_tab[j].o_refs) {
@@ -629,7 +629,7 @@ oft_alloc(void)
 void
 oft_deref(int of)
 {
-	register struct oft *ofptr;
+	struct oft *ofptr;
 
 	ofptr = of_tab + of;
 
@@ -645,7 +645,7 @@ oft_deref(int of)
 int
 uf_alloc(void)
 {
-	register int j;
+	int j;
 
 	for (j = 0; j < UFTSIZE; ++j)
 		/* Portable, unlike  == -1. */
@@ -706,7 +706,7 @@ void
 wr_inode(inoptr ino)
 {
 	struct dinode *buf;
-	register blkno_t blkno;
+	blkno_t blkno;
 
 	magic(ino);
 
@@ -798,10 +798,10 @@ freeblk(int dev, blkno_t blk, int level)
 blkno_t
 bmap(inoptr ip, blkno_t bn, int rwflg)
 {
-	register int i;
-	register bufptr bp;
-	register int j;
-	register blkno_t nb;
+	int i;
+	bufptr bp;
+	int j;
+	blkno_t nb;
 	int sh;
 	int dev;
 
@@ -883,7 +883,7 @@ bmap(inoptr ip, blkno_t bn, int rwflg)
 void
 validblk(int dev, blkno_t num)
 {
-	register fsptr devptr;
+	fsptr devptr;
 
 	devptr = fs_tab + dev;
 
@@ -901,8 +901,8 @@ validblk(int dev, blkno_t num)
 inoptr
 getinode(int uindex)
 {
-	register int oftindex;
-	register inoptr inoindex;
+	int oftindex;
+	inoptr inoindex;
 
 	if ((uindex < 0) || (uindex >= UFTSIZE) ||
 	    (udata.u_files[uindex] & 0x80)) {
@@ -985,7 +985,7 @@ int
 fmount(int dev, inoptr ino)
 {
 	char *buf;
-	register struct filesys *fp;
+	struct filesys *fp;
 
 	if (d_open(dev) != 0)
 		panic("fmount: Cant open filesystem");

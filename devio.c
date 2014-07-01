@@ -44,7 +44,7 @@ unsigned bufclock = 0;	/* Time-stamp counter for LRU. */
 char *
 bread(int dev, blkno_t blk, int rewrite)
 {
-	register bufptr bp;
+	bufptr bp;
 	bufptr bfind();
 	bufptr freebuf();
 
@@ -87,7 +87,7 @@ bawrite(bufptr bp)
 }
 
 /* XXX - what is the return type */
-bfree(register bufptr bp, int dirty)
+bfree(bufptr bp, int dirty)
 {
 	bp->bf_dirty |= dirty;
 	bp->bf_busy = 0;
@@ -115,7 +115,7 @@ zerobuf()
 
 bufsync()
 {
-	register bufptr bp;
+	bufptr bp;
 
 	for (bp = bufpool; bp < bufpool + NBUFS; ++bp)
 		if (bp->bf_dev != -1 && bp->bf_dirty)
@@ -125,7 +125,7 @@ bufsync()
 bufptr
 bfind(int dev, blkno_t blk)
 {
-	register bufptr bp;
+	bufptr bp;
 
 	for (bp = bufpool; bp < bufpool + NBUFS; ++bp)
 		if (bp->bf_dev == dev && bp->bf_blk == blk)
@@ -136,9 +136,9 @@ bfind(int dev, blkno_t blk)
 bufptr
 freebuf()
 {
-	register bufptr bp;
-	register bufptr oldest;
-	register int oldtime;
+	bufptr bp;
+	bufptr oldest;
+	int oldtime;
 
 	/*
 	 * Try to find a non-busy buffer and
@@ -166,7 +166,7 @@ freebuf()
         
 bufinit()
 {
-	register bufptr bp;
+	bufptr bp;
 
 	for (bp = bufpool; bp < bufpool + NBUFS; ++bp)
 		bp->bf_dev = -1;
@@ -174,7 +174,7 @@ bufinit()
 
 bufdump()
 {
-	register bufptr j;
+	bufptr j;
 
 	kprintf("\ndev\tblock\tdirty\tbusy\ttime clock %d\n", bufclock);
 	for (j = bufpool; j < bufpool + NBUFS; ++j)
@@ -312,7 +312,7 @@ Character queue management routines
 
 /* Add something to the tail. */
 /* XXX - what is the return type */
-insq(register struct s_queue *q, char c)
+insq(struct s_queue *q, char c)
 {
 	di();
 	if (q->q_count == q->q_size) {
@@ -329,7 +329,7 @@ insq(register struct s_queue *q, char c)
 
 /* Remove something from the head. */
 /* XXX - what is the return type */
-remq(register struct s_queue *q, char *cp)
+remq(struct s_queue *q, char *cp)
 {
 	di();
 	ifnot (q->q_count) {
@@ -346,7 +346,7 @@ remq(register struct s_queue *q, char *cp)
 
 /* Remove something from the tail; the most recently added char. */
 /* XXX - what is the return type */
-uninsq(register struct s_queue *q, char *cp)
+uninsq(struct s_queue *q, char *cp)
 {
 	di();
 	ifnot (q->q_count) {

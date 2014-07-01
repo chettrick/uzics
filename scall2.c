@@ -138,8 +138,8 @@ execve(char *name, char *argv[], char *envp[])
 
 _execve()
 {
-	register inoptr ino;
-	register char *buf;
+	inoptr ino;
+	char *buf;
 	inoptr n_open();
 	char *bread();
 	blkno_t bmap();
@@ -210,13 +210,13 @@ nogood:
 
 exec2()
 {
-	register blkno_t blk;
-	register char **argv;
-	register char **envp;
-	register int (**sp)();
+	blkno_t blk;
+	char **argv;
+	char **envp;
+	int (**sp)();
 	int argc;
 	char *rargs();
-	register char *progptr;
+	char *progptr;
 	char *buf;
 	blkno_t pblk;
 	blkno_t bmap();
@@ -262,11 +262,11 @@ exec2()
 wargs(char **argv, int blk)
 {
 	/* Address of base of arg strings in user space. */
-	register char *ptr;
-	register int n;
+	char *ptr;
+	int n;
 	struct s_argblk *argbuf;
-	register char *bufp;
-	register int j;
+	char *bufp;
+	int j;
 	char *zerobuf();
 	char *bread();
 
@@ -295,11 +295,11 @@ wargs(char **argv, int blk)
 }
 
 char *
-rargs(register char *ptr, int blk, int *cnt)
+rargs(char *ptr, int blk, int *cnt)
 {
 	struct s_argblk *argbuf;
-	register char **argv;	/* Address of users argv[], just below ptr. */
-	register int n;
+	char **argv;	/* Address of users argv[], just below ptr. */
+	int n;
 	char *bread();
 
 	/* Read back the arguments. */
@@ -355,7 +355,7 @@ sbrk(uint16 incr)
 
 _sbrk()
 {
-	register char *oldbrk;
+	char *oldbrk;
 
 	udata.u_argn += (oldbrk = udata.u_break);
 	if (_brk())
@@ -374,8 +374,8 @@ wait(int *statloc)
 
 _wait()
 {
-	register ptptr p;
-	register int retval;
+	ptptr p;
+	int retval;
 
 	if (statloc > (int *)(&udata)) {
 		udata.u_error = EFAULT;
@@ -441,8 +441,8 @@ __exit()
 
 doexit(int16 val, int16 val2)
 {
-	register int16 j;
-	register ptptr p;
+	int16 j;
+	ptptr p;
 
 	for (j = 0; j < UFTSIZE; ++j)
 		ifnot (udata.u_files[j] & 0x80)	/* Portable equivalent of == -1. */

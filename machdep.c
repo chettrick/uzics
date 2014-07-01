@@ -373,8 +373,8 @@ idump()
  */
 kprintf(nargs)
 {
-	register char **arg, *fmt;
-	register c, base;
+	char **arg, *fmt;
+	int c, base;
 	char s[7], *itob();
 
 	arg = (char **)&nargs + nargs;

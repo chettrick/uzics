@@ -63,8 +63,8 @@ fd_ioctl(int minor)
 static unsigned int
 fd(int rwflag, int minor, int rawflag)
 {
-	register unsigned nblocks;
-	register unsigned firstblk;
+	unsigned nblocks;
+	unsigned firstblk;
 
 	if (rawflag) {
 		if (rawflag == 2) {

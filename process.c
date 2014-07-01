@@ -9,7 +9,7 @@ extern void	bzero(void *, int);
 
 init2()
 {
-	register char *j;
+	char *j;
 	static char bootchar;
 	static char *arg[2] = { "init", NULL };
 	inoptr i_open(), n_open();
@@ -72,7 +72,7 @@ init2()
  */
 psleep(char *event)
 {
-	register dummy;	/* Force saving of registers. */
+	int dummy;	/* Force saving of registers. */
 
 	di();
 	if (udata.u_ptab->p_status != P_RUNNING)
@@ -97,7 +97,7 @@ psleep(char *event)
  */
 wakeup(char *event)
 {
-	register ptptr p;
+	ptptr p;
 
 	di();
 	for (p = ptab; p < ptab + PTABSIZE; ++p) {
@@ -117,7 +117,7 @@ wakeup(char *event)
 ptptr
 getproc()
 {
-	register status;
+	int status;
 	static ptptr pp = ptab;	/* Pointer for round-robin scheduling. */
 
 	for (;;) {
@@ -321,7 +321,7 @@ dofork()
  */
 newproc(ptptr p)
 {
-	register char *j;
+	char *j;
 
 	/* Note that ptab_alloc clears most of the entry. */
 	di();
@@ -352,8 +352,8 @@ newproc(ptptr p)
 ptptr
 ptab_alloc()
 {
-	register ptptr p;
-	register ptptr pp;
+	ptptr p;
+	ptptr pp;
 	static int nextpid = 0;
 
 	di();
@@ -491,7 +491,7 @@ unix(int16 argn3, int16 argn2, int16 argn1, int16 argn, char *uret, int callno)
  */
 chksigs()
 {
-	register j;
+	int j;
 
 	di();
 	ifnot (udata.u_ptab->p_pending) {
@@ -517,7 +517,7 @@ chksigs()
 
 sendsig(ptptr proc, int16 sig)
 {
-	register ptptr p;
+	ptptr p;
 
 	if (proc)
 		ssig(proc, sig);
@@ -527,9 +527,9 @@ sendsig(ptptr proc, int16 sig)
 				ssig(p, sig);
 }
 
-ssig(register ptptr proc, int16 sig)
+ssig(ptptr proc, int16 sig)
 {
-	register stat;
+	char stat;
 
 	di();
 	ifnot (proc->p_status)
