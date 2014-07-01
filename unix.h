@@ -25,7 +25,7 @@ UZI (Unix Z80 Implementation) Kernel:  unix.h
 #define EMAGIC		0xc3	/* Header of executable. */
 #define CMAGIC		24721	/* Random num for cinode c_magic. */
 #define SMOUNTED	12742	/* Magic num to specify mounted filesystem. */
-#define NULL		0
+#define NULL		((void *)0)
 
 /* XXX - Macros to trick the compiler into generating more compact code. */
 #define ifnull(e)	if(e){}else
