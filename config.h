@@ -2,6 +2,13 @@
 UZI (Unix Z80 Implementation) Kernel:  config.h
 ***************************************************/
 
+extern void		bcopy(const void *, void *, int);
+extern void		bzero(void *, int);
+extern void		abort(void);
+
+extern void		di(void);
+extern void		ei(void);
+
 /* Remake devio.c when this is changed. */
 #ifdef DEVIO
 /* devwd.c */

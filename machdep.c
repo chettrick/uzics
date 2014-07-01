@@ -8,12 +8,12 @@ UZI (Unix Z80 Implementation) Kernel:  machdep.c
 extern int	unix();		/* for doexec(). */
 extern void	abort(void);
 
-static int cursig;
-static int (*curvec)();
+static int	cursig;
+static int	(*curvec)();
 
 /*
  * main() is called at the very beginning to initialize everything.
- * It used to be called fs_init().
+ * It used to be called fs_init(). Initial entry is from a jump in data.c.
  */
 int
 main(void)
@@ -32,9 +32,10 @@ main(void)
 /*
  * valadr checks to see if a user-suppled address is legitimate.
  */
+int
 valadr(char *base, uint16 size)
 {
-	if (base < PROGBASE || base+size >= (char *)&udata) {
+	if (base < PROGBASE || base + size >= (char *)&udata) {
 		udata.u_error = EFAULT;
 		return (0);
 	}
@@ -247,7 +248,8 @@ tread(uint16 port)
 /*
  * di disables interrupts.
  */
-di()
+void
+di(void)
 {
 #if 0	/* XXX - Comment out temporarily. */
 #asm 8080

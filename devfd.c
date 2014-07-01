@@ -5,8 +5,6 @@ UZI (Unix Z80 Implementation) Kernel:  devfd.c
 #include "unix.h"
 #include "extern.h"
 
-extern void	ei(void);
-
 #define NUMTRKS 76
 #define NUMSECS 26
 
@@ -63,8 +61,8 @@ fd_ioctl(int minor)
 static unsigned int
 fd(int rwflag, int minor, int rawflag)
 {
-	unsigned nblocks;
-	unsigned firstblk;
+	unsigned int nblocks;
+	unsigned int firstblk;
 
 	if (rawflag) {
 		if (rawflag == 2) {

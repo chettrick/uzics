@@ -2,14 +2,39 @@
 UZI (Unix Z80 Implementation) Kernel:  devio.c
 ***************************************************/
 
-extern void bzero(void *, int);
-
-static int ok();
-static int nogood();
 #define DEVIO
+
+static int	ok(void);
+static int	nogood(void);
 
 #include "unix.h"
 #include "extern.h"
+
+char *		bread(int, blkno_t, int);
+void		brelse(bufptr);
+void		bawrite(bufptr);
+int		bfree(bufptr, int);
+char *		zerobuf(void);
+void		bufsync(void);
+void		bufdump(void);
+int		cdread(int);
+int		cdwrite(int);
+int		swapread(int, blkno_t, unsigned int, char *);
+int		swapwrite(int, blkno_t, unsigned int, char *);
+int		d_open(int);
+int		d_close(int);
+int		d_ioctl(int, int, char *);
+int		validdev(int);
+int		insq(struct s_queue *, char);
+int		remq(struct s_queue *, char *);
+int		uninsq(struct s_queue *, char *);
+int		fullq(struct s_queue *);
+
+static bufptr	bfind(int, blkno_t);
+static bufptr	freebuf(void);
+static void	bufinit(void);
+static int	bdread(bufptr);
+static int	bdwrite(bufptr);
 
 /* Buffer pool management. */
 
@@ -34,8 +59,8 @@ block of a file.
 
 bufsync() write outs all dirty blocks.
 
-Note that a pointer to a buffer structure is the same as a
-pointer to the data.  This is very important.
+XXX - Note that a pointer to a buffer structure is the
+same as a pointer to the data.  This is very important.
 
 ********************************************************/
 
@@ -76,17 +101,19 @@ done:
 	return (bp->bf_data);
 }
 
+void
 brelse(bufptr bp)
 {
 	bfree(bp, 0);
 }
 
+void
 bawrite(bufptr bp)
 {
 	bfree(bp, 1);
 }
 
-/* XXX - what is the return type */
+int
 bfree(bufptr bp, int dirty)
 {
 	bp->bf_dirty |= dirty;
@@ -102,7 +129,7 @@ bfree(bufptr bp, int dirty)
 }
 
 char *
-zerobuf()
+zerobuf(void)
 {
 	bufptr bp;
 	bufptr freebuf();
@@ -113,7 +140,8 @@ zerobuf()
 	return (bp->bf_data);
 }
 
-bufsync()
+void
+bufsync(void)
 {
 	bufptr bp;
 
@@ -122,7 +150,7 @@ bufsync()
 			bdwrite(bp);
 }
 
-bufptr
+static bufptr
 bfind(int dev, blkno_t blk)
 {
 	bufptr bp;
@@ -133,8 +161,8 @@ bfind(int dev, blkno_t blk)
 	return (NULL);
 }
 
-bufptr
-freebuf()
+static bufptr
+freebuf(void)
 {
 	bufptr bp;
 	bufptr oldest;
@@ -163,8 +191,9 @@ freebuf()
 	}
 	return (oldest);
 }
-        
-bufinit()
+
+static void
+bufinit(void)
 {
 	bufptr bp;
 
@@ -172,7 +201,8 @@ bufinit()
 		bp->bf_dev = -1;
 }
 
-bufdump()
+void
+bufdump(void)
 {
 	bufptr j;
 
@@ -193,7 +223,7 @@ devices, and are handed a device number.
 udata.u_base, count, and offset have the rest of the data.
 ****************************************************/
 
-/* XXX - what is the return type */
+static int
 bdread(bufptr bp)
 {
 	ifnot (validdev(bp->bf_dev))
@@ -202,7 +232,7 @@ bdread(bufptr bp)
 	return ((*dev_tab[bp->bf_dev].dev_read)(dev_tab[bp->bf_dev].minor, 0));
 }
 
-/* XXX - what is the return type */
+static int
 bdwrite(bufptr bp)
 {
 	ifnot (validdev(bp->bf_dev))
@@ -211,7 +241,7 @@ bdwrite(bufptr bp)
 	return ((*dev_tab[bp->bf_dev].dev_write)(dev_tab[bp->bf_dev].minor, 0));
 }
 
-/* XXX - what is the return type */
+int
 cdread(int dev)
 {
 	ifnot (validdev(dev))
@@ -219,7 +249,7 @@ cdread(int dev)
 	return ((*dev_tab[dev].dev_read)(dev_tab[dev].minor, 1));
 }
 
-/* XXX - what is the return type */
+int
 cdwrite(int dev)
 {
 	ifnot (validdev(dev))
@@ -227,8 +257,8 @@ cdwrite(int dev)
 	return ((*dev_tab[dev].dev_write)(dev_tab[dev].minor, 1));
 }
 
-/* XXX - what is the return type */
-swapread(int dev, blkno_t blkno, unsigned nbytes, char *buf)
+int
+swapread(int dev, blkno_t blkno, unsigned int nbytes, char *buf)
 {
 	swapbase = buf;
 	swapcnt = nbytes;
@@ -236,8 +266,8 @@ swapread(int dev, blkno_t blkno, unsigned nbytes, char *buf)
 	return ((*dev_tab[dev].dev_read)(dev_tab[dev].minor, 2));
 }
 
-/* XXX - what is the return type */
-swapwrite(int dev, blkno_t blkno, unsigned nbytes, char *buf)
+int
+swapwrite(int dev, blkno_t blkno, unsigned int nbytes, char *buf)
 {
 	swapbase = buf;
 	swapcnt = nbytes;
@@ -256,7 +286,7 @@ should be consulted instead.
 Any device other than a disk will have only raw access.
 *****************************************************/
 
-/* XXX - what is the return type */
+int
 d_open(int dev)
 {
 	ifnot (validdev(dev))
@@ -264,44 +294,43 @@ d_open(int dev)
 	return ((*dev_tab[dev].dev_open)(dev_tab[dev].minor));
 }
 
+int
 d_close(int dev)
 {
 	ifnot (validdev(dev))
 		panic("d_close: bad device");
-	/* XXX - return this, yes */
-	(*dev_tab[dev].dev_close)(dev_tab[dev].minor);
+	return ((*dev_tab[dev].dev_close)(dev_tab[dev].minor));
 }
 
-/* XXX - what is the return type */
+int
 d_ioctl(int dev, int request, char *data)
 {
 	ifnot (validdev(dev)) {
 		udata.u_error = ENXIO;
 		return (-1);
 	}
-	if((*dev_tab[dev].dev_ioctl)(dev_tab[dev].minor, request,data)) {
+	if ((*dev_tab[dev].dev_ioctl)(dev_tab[dev].minor,
+	    request, data)) {
 		udata.u_error = EINVAL;
 		return (-1);
 	}
 	return (0);
 }
 
-/* XXX - what is the return type */
-static 
-ok()
+static int
+ok(void)
 {
 	return (0);
 }
 
-/* XXX - what is the return type */
-static 
-nogood()
+static int
+nogood(void)
 {
 	return (-1);
 }
 
-/* XXX - what is the return type */
-validdev(dev)
+int
+validdev(int dev)
 {
 	return (dev >= 0 && dev < (sizeof(dev_tab) / sizeof(struct devsw)));
 }
@@ -311,7 +340,7 @@ Character queue management routines
 ************************************************************/
 
 /* Add something to the tail. */
-/* XXX - what is the return type */
+int
 insq(struct s_queue *q, char c)
 {
 	di();
@@ -328,7 +357,7 @@ insq(struct s_queue *q, char c)
 }
 
 /* Remove something from the head. */
-/* XXX - what is the return type */
+int
 remq(struct s_queue *q, char *cp)
 {
 	di();
@@ -345,7 +374,7 @@ remq(struct s_queue *q, char *cp)
 }
 
 /* Remove something from the tail; the most recently added char. */
-/* XXX - what is the return type */
+int
 uninsq(struct s_queue *q, char *cp)
 {
 	di();
@@ -362,7 +391,7 @@ uninsq(struct s_queue *q, char *cp)
 }
 
 /* Returns true if the queue has more characters than its wakeup number. */
-/* XXX - what is the return type */
+int
 fullq(struct s_queue *q)
 {
 	di();
