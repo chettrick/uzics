@@ -7,15 +7,51 @@ UZI (Unix Z80 Implementation) Kernel:  scall1.c
 
 extern void	bcopy(const void *, void *, int);
 
+int		_open(char *, int16);
+int		_close(int16);
+int		_creat(char *, int16);
+int		_pipe(int *);
+int		_link(char *, char *);
+int		_unlink(char *);
+int		_read(int16, char *, uint16);
+int		_write(int16, char *, uint16);
+int16		_seek(int16, uint16, int16);
+int		_chdir(char *);
+int		_mknod(char *, int16, int16);
+void		_sync(void);
+int		_access(char *, int16);
+int		_chmod(char *, int16);
+int		_chown(char *, int, int);
+int		_stat(char *, char *);
+int		_fstat(int16, char *);
+int		_dup(int16);
+int		_dup2(int16, int16);
+int		_umask(int);
+int		_getfsys(int16, struct filesys *);
+int		_ioctl(int, int, char *);
+int		_mount(char *, char *, int);
+int		_umount(char *);
+
+int		doclose(int16);
+void		readi(inoptr);
+void		writei(inoptr);
+
+static inoptr	rwsetup(int);
+static int	min(int, int);
+static int	psize(inoptr);
+static void	addoff(off_t *, int);
+static void	updoff(void);
+static void	stcpy(inoptr, char *);
+
 /*******************************************
 open(char *name, int16 flag)
 *********************************************/
-
-#define name (char *)udata.u_argn1
-#define flag (int16)udata.u_argn
-
-_open()
+int
+_open(char *name, int16 flag)
 {
+	name = (char *)udata.u_argn1;
+	flag = (int16)udata.u_argn;
+
 	int16 uindex;
 	int16 oftindex;
 	inoptr ino;
@@ -70,24 +106,22 @@ nooft:
 	return (-1);
 }
 
-#undef name
-#undef flag
-
 /*********************************************
 close(int16 uindex)
 **********************************************/
-
-#define uindex (int16)udata.u_argn
-
-_close()
+int
+_close(int16 uindex)
 {
+	uindex = (int16)udata.u_argn;
+
 	return (doclose(uindex));
 }
 
-#undef uindex
-
+int
 doclose(int16 uindex)
 {
+	uindex = (int16)udata.u_argn;
+
 	int16 oftindex;
 	inoptr ino;
 	inoptr getinode();
@@ -109,12 +143,12 @@ doclose(int16 uindex)
 /****************************************
 creat(char *name, int16 mode)
 *****************************************/
-
-#define name (char *)udata.u_argn1
-#define mode (int16)udata.u_argn
-
-_creat()
+int
+_creat(char *name, int16 mode)
 {
+	name = (char *)udata.u_argn1;
+	mode = (int16)udata.u_argn;
+
 	inoptr ino;
 	int16 uindex;
 	int16 oftindex;
@@ -181,17 +215,14 @@ nogood:
 	return (-1);
 }
 
-#undef name
-#undef mode
-
 /********************************************
 pipe(int fildes[])
 *******************************************/
-
-#define fildes (int *)udata.u_argn
-
-_pipe()
+int
+_pipe(int *fildes)
 {
+	fildes = (int *)udata.u_argn;
+
 	int16 u1, u2, oft1, oft2;
 	inoptr ino;
 	inoptr i_open();
@@ -242,17 +273,15 @@ nogood2:
 	return (-1);
 }
 
-#undef fildes
-
 /********************************************
 link(char *name1, char *name2)
 *********************************************/
-
-#define name1 (char *)udata.u_argn1
-#define name2 (char *)udata.u_argn
-
-_link()
+int
+_link(char *name1, char *name2)
 {
+	name1 = (char *)udata.u_argn1;
+	name2 = (char *)udata.u_argn;
+
 	inoptr ino;
 	inoptr ino2;
 	inoptr parent2;
@@ -300,17 +329,14 @@ nogood:
 	return (-1);
 }
 
-#undef name1
-#undef name2
-
 /**********************************************************
 unlink(char *path)
 **************************************************/
-
-#define path (char *)udata.u_argn
-
-_unlink()
+int
+_unlink(char *path)
 {
+	path = (char *)udata.u_argn;
+
 	inoptr ino;
 	inoptr pino;
 	char *filename();
@@ -348,18 +374,16 @@ nogood:
 	return (-1);
 }
 
-#undef path
-
 /*****************************************************
 read(int16 d, char *buf, uint16 nbytes)
 **********************************************/
-
-#define d (int16)udata.u_argn2
-#define buf (char *)udata.u_argn1
-#define nbytes (uint16)udata.u_argn
-
-_read()
+int
+_read(int16 d, char *buf, uint16 nbytes)
 {
+	d = (int16)udata.u_argn2;
+	buf = (char *)udata.u_argn1;
+	nbytes = (uint16)udata.u_argn;
+
 	inoptr ino;
 	inoptr rwsetup();
 
@@ -372,20 +396,16 @@ _read()
 	return (udata.u_count);
 }
 
-#undef d
-#undef buf
-#undef nbytes
-
 /***********************************
 write(int16 d, char *buf, uint16 nbytes)
 ***********************************/
-
-#define d (int16)udata.u_argn2
-#define buf (char *)udata.u_argn1
-#define nbytes (uint16)udata.u_argn
-
-_write()
+int
+_write(int16 d, char *buf, uint16 nbytes)
 {
+	d = (int16)udata.u_argn2;
+	buf = (char *)udata.u_argn1;
+	nbytes = (uint16)udata.u_argn;
+
 	inoptr ino;
 	off_t *offp;
 	inoptr rwsetup();
@@ -399,11 +419,7 @@ _write()
 	return (udata.u_count);
 }
 
-#undef d
-#undef buf
-#undef nbytes
-
-inoptr
+static inoptr
 rwsetup(int rwflag)
 {
 	inoptr ino;
@@ -431,6 +447,7 @@ rwsetup(int rwflag)
 }
 
 /* XXX - needs more i/o error handling. */
+void
 readi(inoptr ino)
 {
 	uint16 amount;
@@ -450,9 +467,9 @@ readi(inoptr ino)
 	case F_REG:
 		/* See if end of file will limit read. */
 		toread = udata.u_count =
-		    ino->c_node.i_size.o_blkno - udata.u_offset.o_blkno >= 64 ?
-		    udata.u_count : min(udata.u_count,
-		    512 * (ino->c_node.i_size.o_blkno - udata.u_offset.o_blkno) +
+		    ino->c_node.i_size.o_blkno - udata.u_offset.o_blkno >=
+		    64 ? udata.u_count : min(udata.u_count, 512 *
+		    (ino->c_node.i_size.o_blkno - udata.u_offset.o_blkno) +
 		    (ino->c_node.i_size.o_offset - udata.u_offset.o_offset));
 		goto loop;
 	case F_PIPE:
@@ -470,13 +487,15 @@ readi(inoptr ino)
 		dev = *(ino->c_node.i_addr);
 loop:
 		while (toread) {
-			if ((pblk = bmap(ino, udata.u_offset.o_blkno, 1)) != NULLBLK)
+			if ((pblk = bmap(ino, udata.u_offset.o_blkno, 1)) !=
+			    NULLBLK)
 				bp = bread(dev, pblk, 0);
 			else
 				bp = zerobuf();
 
 			bcopy(bp + udata.u_offset.o_offset, udata.u_base,
-			    (amount = min(toread, 512 - udata.u_offset.o_offset)));
+			    (amount = min(toread,
+			    512 - udata.u_offset.o_offset)));
 			brelse(bp);
 
 			udata.u_base += amount;
@@ -501,6 +520,7 @@ loop:
 }
 
 /* XXX - needs more i/o error handling. */
+void
 writei(inoptr ino)
 {
 	uint16 amount;
@@ -542,7 +562,8 @@ loop:
 		while (towrite) {
 			amount = min(towrite, 512 - udata.u_offset.o_offset);
 
-			if ((pblk = bmap(ino, udata.u_offset.o_blkno, 0)) == NULLBLK)
+			if ((pblk = bmap(ino, udata.u_offset.o_blkno, 0)) ==
+			    NULLBLK)
 				break;	/* No space to make more blocks. */
 			/*
 			 * If we are writing an entire block,
@@ -550,7 +571,8 @@ loop:
 			 */
 			bp = bread(dev, pblk, (amount == 512));
 
-			bcopy(udata.u_base, bp + udata.u_offset.o_offset, amount);
+			bcopy(udata.u_base, bp + udata.u_offset.o_offset,
+			    amount);
 			bawrite(bp);
 
 			udata.u_base += amount;
@@ -586,17 +608,20 @@ loop:
 	}
 }
 
+static int
 min(int a, int b)
 {
 	return (a < b ? a : b);
 }
 
+static int
 psize(inoptr ino)
 {
 	return (512 * ino->c_node.i_size.o_blkno +
 	    ino->c_node.i_size.o_offset);
 }
 
+static void
 addoff(off_t *ofptr, int amount)
 {
 	if (amount >= 0) {
@@ -616,7 +641,8 @@ addoff(off_t *ofptr, int amount)
 	}
 }
 
-updoff()
+static void
+updoff(void)
 {
 	off_t *offp;
 
@@ -629,20 +655,20 @@ updoff()
 /****************************************
 seek(int16 file, uint16 offset, int16 flag)
 *****************************************/
-
-#define file (int16)udata.u_argn2
-#define offset (uint16)udata.u_argn1
-#define flag (int16)udata.u_argn
-
-_seek()
+int16
+_seek(int16 file, uint16 offset, int16 flag)
 {
+	file = (int16)udata.u_argn2;
+	offset = (uint16)udata.u_argn1;
+	flag = (int16)udata.u_argn;
+
 	inoptr ino;
 	int16 oftno;
 	uint16 retval;
 	inoptr getinode();
 
 	if ((ino = getinode(file)) == NULLINODE)
-	return (-1);
+		return (-1);
 
 	if (getmode(ino) == F_PIPE) {
 		udata.u_error = ESPIPE;
@@ -667,7 +693,8 @@ _seek()
 		break;
 	case 2:
 		of_tab[oftno].o_ptr.o_blkno = ino->c_node.i_size.o_blkno;
-		of_tab[oftno].o_ptr.o_offset = ino->c_node.i_size.o_offset + offset;
+		of_tab[oftno].o_ptr.o_offset =
+		    ino->c_node.i_size.o_offset + offset;
 		break;
 	case 3:
 		of_tab[oftno].o_ptr.o_blkno = offset;
@@ -676,14 +703,15 @@ _seek()
 		of_tab[oftno].o_ptr.o_blkno += offset;
 		break;
 	case 5:
-		of_tab[oftno].o_ptr.o_blkno = ino->c_node.i_size.o_blkno + offset;
+		of_tab[oftno].o_ptr.o_blkno =
+		    ino->c_node.i_size.o_blkno + offset;
 		break;
 	default:
 		udata.u_error = EINVAL;
 		return (-1);
 	}
 
-	while ((unsigned)of_tab[oftno].o_ptr.o_offset >= 512) {
+	while ((unsigned int)of_tab[oftno].o_ptr.o_offset >= 512) {
 		of_tab[oftno].o_ptr.o_offset -= 512;
 		++of_tab[oftno].o_ptr.o_blkno;
 	}
@@ -691,18 +719,14 @@ _seek()
 	return ((int16)retval);
 }
 
-#undef file
-#undef offset
-#undef flag
-
 /************************************
 chdir(char *dir)
 ************************************/
-
-#define dir (char *)udata.u_argn
-
-_chdir()
+int
+_chdir(char *dir)
 {
+	dir = (char *)udata.u_argn;
+
 	inoptr newcwd;
 	inoptr n_open();
 
@@ -719,18 +743,16 @@ _chdir()
 	return (0);
 }
 
-#undef dir
-
 /*************************************
 mknod(char *name, int16 mode, int16 dev)
 ***************************************/
-
-#define name (char *)udata.u_argn2
-#define mode (int16)udata.u_argn1
-#define dev (int16)udata.u_argn
-
-_mknod()
+int
+_mknod(char *name, int16 mode, int16 dev)
 {
+	name = (char *)udata.u_argn2;
+	mode = (int16)udata.u_argn1;
+	dev = (int16)udata.u_argn;
+
 	inoptr ino;
 	inoptr parent;
 	inoptr n_open();
@@ -771,15 +793,11 @@ nogood3:
 	return (-1);
 }
 
-#undef name
-#undef mode
-#undef dev
-
 /****************************************
-sync()
+sync(void)
 ***************************************/
-
-_sync()
+void
+_sync(void)
 {
 	int j;
 	inoptr ino;
@@ -811,12 +829,12 @@ _sync()
 /****************************************
 access(char *path, int16 mode)
 ****************************************/
-
-#define path (char *)udata.u_argn1
-#define mode (int16)udata.u_argn
-
-_access()
+int
+_access(char *path, int16 mode)
 {
+	path = (char *)udata.u_argn1;
+	mode = (int16)udata.u_argn;
+
 	inoptr ino;
 	int16 euid;
 	int16 egid;
@@ -853,18 +871,15 @@ nogood:
 	return (retval);
 }
 
-#undef path
-#undef mode
-
 /*******************************************
 chmod(char *path, int16 mode)
 *******************************************/
-
-#define path (char *)udata.u_argn1
-#define mode (int16)udata.u_argn
-
-_chmod()
+int
+_chmod(char *path, int16 mode)
 {
+	path = (char *)udata.u_argn1;
+	mode = (int16)udata.u_argn;
+
 	inoptr ino;
 	inoptr n_open();
 
@@ -883,19 +898,16 @@ _chmod()
 	return (0);
 }
 
-#undef path
-#undef mode
-
 /***********************************************
 chown(char *path, int owner, int group)
 **********************************************/
-
-#define path (char *)udata.u_argn2
-#define owner (int16)udata.u_argn1
-#define group (int16)udata.u_argn
-
-_chown()
+int
+_chown(char *path, int owner, int group)
 {
+	path = (char *)udata.u_argn2;
+	owner = (int16)udata.u_argn1;
+	group = (int16)udata.u_argn;
+
 	inoptr ino;
 	inoptr n_open();
 
@@ -915,19 +927,15 @@ _chown()
 	return (0);
 }
 
-#undef path
-#undef owner
-#undef group
-
 /**************************************
 stat(char *path, char *buf)
 ****************************************/
-
-#define path (char *)udata.u_argn1
-#define buf (char *)udata.u_argn
-
-_stat()
+int
+_stat(char *path, char *buf)
 {
+	path = (char *)udata.u_argn1;
+	buf = (char *)udata.u_argn;
+
 	inoptr ino;
 	inoptr n_open();
 
@@ -940,18 +948,15 @@ _stat()
 	return (0);
 }
 
-#undef path
-#undef buf
-
 /********************************************
 fstat(int16 fd, char *buf)
 ********************************************/
-
-#define fd (int16)udata.u_argn1
-#define buf (char *)udata.u_argn
-
-_fstat()
+int
+_fstat(int16 fd, char *buf)
 {
+	fd = (int16)udata.u_argn1;
+	buf = (char *)udata.u_argn;
+
 	inoptr ino;
 	inoptr getinode();
 
@@ -965,13 +970,11 @@ _fstat()
 	return (0);
 }
 
-#undef fd
-#undef buf
-
 /* Utility for stat and fstat. */
+static void
 stcpy(inoptr ino, char *buf)
 {
-	/* Violently system-dependent. */
+	/* XXX - Violently system-dependent. */
 	bcopy((char *)&(ino->c_dev), buf, 12);
 	bcopy((char *)&(ino->c_node.i_addr[0]), buf + 12, 2);
 	bcopy((char *)&(ino->c_node.i_size), buf + 14, 16);
@@ -980,11 +983,11 @@ stcpy(inoptr ino, char *buf)
 /************************************
 dup(int16 oldd)
 ************************************/
-
-#define oldd (uint16)udata.u_argn
-
-_dup()
+int
+_dup(int16 oldd)
 {
+	oldd = (uint16)udata.u_argn;
+
 	int newd;
 	inoptr getinode();
 
@@ -1000,17 +1003,15 @@ _dup()
 	return (newd);
 }
 
-#undef oldd
-
 /****************************************
 dup2(int16 oldd, int16 newd)
 ****************************************/
-
-#define oldd (int16)udata.u_argn1
-#define newd (int16)udata.u_argn
-
-_dup2()
+int
+_dup2(int16 oldd, int16 newd)
 {
+	oldd = (int16)udata.u_argn1;
+	newd = (int16)udata.u_argn;
+
 	inoptr getinode();
 
 	if (getinode(oldd) == NULLINODE)
@@ -1030,17 +1031,14 @@ _dup2()
 	return (0);
 }
 
-#undef oldd
-#undef newd
-
 /**************************************
 umask(int mask)
 *************************************/
-
-#define mask (int16)udata.u_argn
-
-_umask()
+int
+_umask(int mask)
 {
+	mask = (int16)udata.u_argn;
+
 	int omask;
 
 	omask = udata.u_mask;
@@ -1048,24 +1046,21 @@ _umask()
 	return (omask);
 }
 
-#undef mask
-
 /*
  * Special system call returns super-block of given
  * filesystem for users to determine free space, etc.
- * Should be replaced with a sync() followed by a
+ * XXX - Should be replaced with a sync() followed by a
  * read of block 1 of the device.
  */
-
 /***********************************************
 getfsys(int16 dev, struct filesys *buf)
 **************************************************/
-
-#define dev (int16)udata.u_argn1
-#define buf (struct filesys *)udata.u_argn
-
-_getfsys()
+int
+_getfsys(int16 dev, struct filesys *buf)
 {
+	dev = (int16)udata.u_argn1;
+	buf = (struct filesys *)udata.u_argn;
+
 	if (dev < 0 || dev >= NDEVS || fs_tab[dev].s_mounted != SMOUNTED) {
 		udata.u_error = ENXIO;
 		return (-1);
@@ -1075,19 +1070,16 @@ _getfsys()
 	return (0);
 }
 
-#undef dev
-#undef buf
-
 /****************************************
 ioctl(int fd, int request, char *data)
 *******************************************/
-
-#define fd (int)udata.u_argn2
-#define request (int)udata.u_argn1
-#define data (char *)udata.u_argn
-
-_ioctl()
+int
+_ioctl(int fd, int request, char *data)
 {
+	fd = (int)udata.u_argn2;
+	request = (int)udata.u_argn1;
+	data = (char *)udata.u_argn;
+
 	inoptr ino;
 	int dev;
 	inoptr getinode();
@@ -1112,22 +1104,17 @@ _ioctl()
 	return (0);
 }
 
-#undef fd
-#undef request
-#undef data
-
-/* This implementation of mount ignores the rwflag. */
-
+/* XXX - This implementation of mount ignores the rwflag. */
 /*****************************************
 mount(char *spec, char *dir, int rwflag)
 *******************************************/
-
-#define spec (char *)udata.u_argn2
-#define dir (char *)udata.u_argn1
-#define rwflag (int)udata.u_argn
-
-_mount()
+int
+_mount(char *spec, char *dir, int rwflag)
 {
+	spec = (char *)udata.u_argn2;
+	dir = (char *)udata.u_argn1;
+	rwflag = (int)udata.u_argn;
+
 	inoptr sino, dino;
 	int dev;
 	inoptr n_open();
@@ -1184,18 +1171,14 @@ nogood:
 	return (-1);
 }
 
-#undef spec
-#undef dir
-#undef rwflag
-
 /******************************************
 umount(char *spec)
 ******************************************/
-
-#define spec (char *)udata.u_argn
-
-_umount()
+int
+_umount(char *spec)
 {
+	spec = (char *)udata.u_argn;
+
 	inoptr sino;
 	int dev;
 	inoptr ptr;
@@ -1242,5 +1225,3 @@ nogood:
 	i_deref(sino);
 	return (-1);
 }
-
-#undef spec
