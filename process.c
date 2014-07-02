@@ -7,7 +7,32 @@ UZI (Unix Z80 Implementation) Kernel:  process.c
 
 extern void	bzero(void *, int);
 
-init2()
+void		init2(void);
+void		psleep(char *);
+void		wakeup(char *);
+ptptr		getproc(void);
+void		swapin(ptptr);
+int		dofork(void);
+int		clk_int(void);
+int		unix(int16, int16, int16, int16, char *, int);
+void		chksigs(void);
+void		sendsig(ptptr, int16);
+void		ssig(ptptr, int16);
+
+static int	swapout(void);
+static void	swrite(void);
+static void	newproc(ptptr);
+static ptptr	ptab_alloc(void);
+
+extern int	(*disp_tab[])();
+
+char *		stkptr;		/* Temp storage for swapout(). */
+int16		newid;		/* Temp storage for dofork(). */
+
+static int	j;		/* XXX - For unix()? */
+
+void
+init2(void)
 {
 	char *j;
 	static char bootchar;
@@ -57,7 +82,7 @@ init2()
 	udata.u_argn1 = (int16)(&arg[0]);
 	udata.u_argn = (int16)(&arg[1]);
 	_execve();
-/*
+/* XXX - Why is this commented out
 	_execve("/init",&arg[0],&arg[1]);
 */
 	panic("init2: no /init");
@@ -70,6 +95,7 @@ init2()
  * already been disabled.  An event of 0 means a pause(), while an
  * event equal to the process's own ptab address is a wait().
  */
+void
 psleep(char *event)
 {
 	int dummy;	/* Force saving of registers. */
@@ -95,6 +121,7 @@ psleep(char *event)
 /*
  * wakeup looks for any process waiting on the event and makes it runnable.
  */
+void
 wakeup(char *event)
 {
 	ptptr p;
@@ -115,7 +142,7 @@ wakeup(char *event)
  * This is the only time-wasting loop in the system.
  */
 ptptr
-getproc()
+getproc(void)
 {
 	int status;
 	static ptptr pp = ptab;	/* Pointer for round-robin scheduling. */
@@ -135,9 +162,6 @@ getproc()
 	}
 }
 
-/* Temp storage for swapout(). */
-char *stkptr;
-
 /*
  * swapout swaps out the current process, finds another that
  * is READY, possibly the same process, and swaps it in.
@@ -145,7 +169,8 @@ char *stkptr;
  * it thinks it has just returned from swapout.
  * swapout can not have any arguments or auto variables.
  */
-swapout()
+static int
+swapout(void)
 {
 	static ptptr newp;
 	ptptr getproc();
@@ -187,7 +212,8 @@ swapout()
 /*
  * swrite actually writes out the image.
  */
-swrite()
+static void
+swrite(void)
 {
 	blkno_t blk;
 	blk = udata.u_ptab->p_swap;
@@ -212,6 +238,7 @@ swrite()
 /*
  * swapin swaps in the supplied process.
  */
+void
 swapin(ptptr pp)
 {
 	static blkno_t blk;
@@ -259,14 +286,12 @@ swapin(ptptr pp)
 #endif
 }
 
-/* Temp storage for dofork. */
-int16 newid;
-
 /*
  * dofork implements forking.
  * dofork can not have any arguments or auto variables.
  */
-dofork()
+int
+dofork(void)
 {
 	static ptptr p;
 	ptptr ptab_alloc();
@@ -319,6 +344,7 @@ dofork()
  * newproc fixes up the tables for the child of a fork.
  * p is a new process table entry.
  */
+static void
 newproc(ptptr p)
 {
 	char *j;
@@ -349,8 +375,8 @@ newproc(ptptr p)
  * ptab_alloc allocates a new process table slot,
  * and fills in its p_pid field with a unique number.
  */
-ptptr
-ptab_alloc()
+static ptptr
+ptab_alloc(void)
 {
 	ptptr p;
 	ptptr pp;
@@ -386,7 +412,8 @@ nogood:
  * Also it decrements the alarm clock of processes.
  * clk_int can not have any auto or register variables.
  */
-clk_int()
+int
+clk_int(void)
 {
 	static ptptr p;
 
@@ -425,12 +452,10 @@ clk_int()
 	return (1);
 }
 
-extern int (*disp_tab[])();
-static int j;
-
 /*
  * No auto variables here, so carry flag will be preserved.
  */
+int
 unix(int16 argn3, int16 argn2, int16 argn1, int16 argn, char *uret, int callno)
 {
 	udata.u_argn3 = argn3;
@@ -489,7 +514,8 @@ unix(int16 argn3, int16 argn2, int16 argn1, int16 argn, char *uret, int callno)
 /*
  * chksigs sees if the current process has any signals set, and deals with them.
  */
-chksigs()
+void
+chksigs(void)
 {
 	int j;
 
@@ -515,6 +541,7 @@ chksigs()
 	ei();
 }
 
+void
 sendsig(ptptr proc, int16 sig)
 {
 	ptptr p;
@@ -527,6 +554,7 @@ sendsig(ptptr proc, int16 sig)
 				ssig(p, sig);
 }
 
+void
 ssig(ptptr proc, int16 sig)
 {
 	char stat;
