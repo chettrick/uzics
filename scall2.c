@@ -195,7 +195,7 @@ _execve()
 	 */
 	udata.u_ino = ino;	/* Termorarily stash these here. */
 
-	tempstk();	/* XXX - Where is this defined? */
+	tempstack();
 	exec2();	/* Never returns. */
 nogood2:
 	bfree(buf, 0);
