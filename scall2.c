@@ -8,6 +8,33 @@ UZI (Unix Z80 Implementation) Kernel:  scall2.c
 extern void	bcopy(const void *, void *, int);
 extern void	bzero(void *, int);
 
+int		_getpid(void);
+int		_getppid(void);
+int		_getuid(void);
+int		_getgid(void);
+int		_setuid(int);
+int		_setgid(int);
+int		_time(int *);
+int		_stime(int *);
+int		_times(char *);
+int		_execve(char *, char **, char **);
+int		_brk(char *);
+int		_sbrk(uint16);
+int		_wait(int *);
+void		__exit(int16);
+int		_fork(void);
+int		_pause(void);
+int		_signal(int16, int16 (*func)());
+int		_kill(int16, int16);
+int		_alarm(uint16);
+
+void		doexit(int16, int16);
+
+static void	exec2(void);
+static int	wargs(char **, int);
+static char *	rargs(char *, int, int *);
+
+
 /* getpid() */
 int
 _getpid(void)
