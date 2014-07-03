@@ -8,25 +8,30 @@ UZI (Unix Z80 Implementation) Kernel:  scall2.c
 extern void	bcopy(const void *, void *, int);
 extern void	bzero(void *, int);
 
-/* Getpid() */
-_getpid()
+/* getpid() */
+int
+_getpid(void)
 {
 	return (udata.u_ptab->p_pid);
 }
 
-/* Getppid() */
-_getppid()
+/* getppid() */
+int
+_getppid(void)
 {
 	return (udata.u_ptab->p_pptr->p_pid);
 }
 
-/* Getuid() */
-_getuid()
+/* getuid() */
+int
+_getuid(void)
 {
 	return (udata.u_ptab->p_uid);
 }
 
-_getgid()
+/* getgid() */
+int
+_getgid(void)
 {
 	return (udata.u_gid);
 }
@@ -34,11 +39,11 @@ _getgid()
 /*********************************
 setuid(int uid)
 ***********************************/
-
-#define uid (int)udata.u_argn
-
-_setuid()
+int
+_setuid(int uid)
 {
+	uid = (int)udata.u_argn;
+
 	if (super() || udata.u_ptab->p_uid == uid) {
 		udata.u_ptab->p_uid = uid;
 		udata.u_euid = uid;
@@ -48,16 +53,14 @@ _setuid()
 	return (-1);
 }
 
-#undef uid
-
 /*****************************************
 setgid(int gid)
 ****************************************/
-
-#define gid (int16)udata.u_argn
-
-_setgid()
+int
+_setgid(int gid)
 {
+	gid = (int16)udata.u_argn;
+
 	if (super() || udata.u_gid == gid) {
 		udata.u_gid = gid;
 		udata.u_egid = gid;
@@ -67,30 +70,26 @@ _setgid()
 	return (-1);
 }
 
-#undef gid
-
 /***********************************
 time(int tvec[])
 **************************************/
-
-#define tvec (int *)udata.u_argn
-
-_time()
+int
+_time(int tvec[])
 {
+	tvec = (int *)udata.u_argn;
+
 	rdtime(tvec);	/* In machdep.c */
 	return (0);
 }
 
-#undef tvec
-
 /**************************************
 stime(int tvec[])
 **********************************/
-
-#define tvec (int *)udata.u_argn
-
-_stime()
+int
+_stime(int tvec[])
 {
+	tvec = (int *)udata.u_argn;
+
 /* XXX - Why is this commented out
 	ifnot (super()) {
 		udata.u_error = EPERM;
@@ -104,16 +103,14 @@ _stime()
 	return (-1);
 }
 
-#undef tvec
-
 /********************************************
 times(char *buf)
 **********************************************/
-
-#define buf (char *)udata.u_argn
-
-_times()
+int
+_times(char *buf)
 {
+	buf = (char *)udata.u_argn;
+
 	ifnot (valadr(buf, 6 * sizeof(time_t)))
 		return (-1);
 
@@ -124,20 +121,18 @@ _times()
 	return (0);
 }
 
-#undef buf
-
 /* User's execve() call. All other flavors are library routines. */
 
 /*****************************************
 execve(char *name, char *argv[], char *envp[])
 *****************************************/
-
-#define name (char *)udata.u_argn2
-#define argv (char **)udata.u_argn1
-#define envp (char **)udata.u_argn
-
-_execve()
+int
+_execve(char *name, char *argv[], char *envp[])
 {
+	name = (char *)udata.u_argn2;
+	argv = (char **)udata.u_argn1;
+	envp = (char **)udata.u_argn;
+
 	inoptr ino;
 	char *buf;
 	inoptr n_open();
@@ -204,11 +199,8 @@ nogood:
 	return (-1);
 }
 
-#undef name
-#undef argv
-#undef envp
-
-exec2()
+static void
+exec2(void)
 {
 	blkno_t blk;
 	char **argv;
@@ -259,6 +251,7 @@ exec2()
 	doexec((int16 *)(udata.u_isp = envp - 2));
 }
 
+static int
 wargs(char **argv, int blk)
 {
 	/* Address of base of arg strings in user space. */
@@ -271,7 +264,9 @@ wargs(char **argv, int blk)
 	char *bread();
 
 	/* Gather the arguments and put them on the swap device. */
-	argbuf = (struct s_argblk *)bread(SWAPDEV, udata.u_ptab->p_swap + blk, 2);
+	argbuf = (struct s_argblk *)bread(SWAPDEV,
+	    udata.u_ptab->p_swap + blk, 2);
+
 	bufp = argbuf->a_buf;
 	for (j = 0; argv[j] != NULL; ++j) {
 		ptr = argv[j];
@@ -294,7 +289,7 @@ wargs(char **argv, int blk)
 	return (0);
 }
 
-char *
+static char *
 rargs(char *ptr, int blk, int *cnt)
 {
 	struct s_argblk *argbuf;
@@ -303,7 +298,8 @@ rargs(char *ptr, int blk, int *cnt)
 	char *bread();
 
 	/* Read back the arguments. */
-	argbuf = (struct s_argblk *)bread(SWAPDEV, udata.u_ptab->p_swap + blk, 0);
+	argbuf = (struct s_argblk *)bread(SWAPDEV,
+	    udata.u_ptab->p_swap + blk, 0);
 
 	/* Move them into the users address space, at the very top. */
 	ptr -= argbuf->a_arglen;
@@ -329,14 +325,14 @@ rargs(char *ptr, int blk, int *cnt)
 /**********************************
 brk(char *addr)
 ************************************/
-
-#define addr (char *)udata.u_argn
-
-_brk()
+int
+_brk(char *addr)
 {
+	addr = (char *)udata.u_argn;
+
 	char dummy;	/* A thing to take address of. */
 
-	/* A hack to get approx val of stack ptr. */
+	/* XXX - A hack to get approx val of stack ptr. */
 	if (addr < PROGBASE || (addr + 64) >= (char *)&dummy) {
 		udata.u_error = ENOMEM;
 		return (-1);
@@ -345,35 +341,31 @@ _brk()
 	return (0);
 }
 
-#undef addr
-
 /************************************
 sbrk(uint16 incr)
 ***************************************/
-
-#define incr (uint16)udata.u_argn
-
-_sbrk()
+int
+_sbrk(uint16 incr)
 {
+	incr = (uint16)udata.u_argn;
+
 	char *oldbrk;
 
 	udata.u_argn += (oldbrk = udata.u_break);
-	if (_brk())
+	if (_brk(udata.u_argn))	/* XXX - Verify correctness. */
 		return (-1);
 
 	return ((int)oldbrk);
 }
 
-#undef incr
-
 /**************************************
 wait(int *statloc)
 ****************************************/
-
-#define statloc (int *)udata.u_argn
-
-_wait()
+int
+_wait(int *statloc)
 {
+	statloc = (int *)udata.u_argn;
+
 	ptptr p;
 	int retval;
 
@@ -384,9 +376,11 @@ _wait()
 
 	di();
 	/* See if we have any children. */
-	for (p = ptab; p < ptab + PTABSIZE; ++p)
-		if (p->p_status && p->p_pptr == udata.u_ptab && p != udata.u_ptab)
+	for (p = ptab; p < ptab + PTABSIZE; ++p) {
+		if (p->p_status && p->p_pptr == udata.u_ptab &&
+		    p != udata.u_ptab)
 			goto ok;
+	}
 	udata.u_error = ECHILD;
 	ei();
 	return (-1);
@@ -424,28 +418,25 @@ ok:
 	}
 }
 
-#undef statloc
-
 /**************************************
 _exit(int16 val)
 **************************************/
-
-#define val (int16)udata.u_argn
-
-__exit()
+void
+__exit(int16 val)
 {
+	val = (int16)udata.u_argn;
+
 	doexit(val, 0);
 }
 
-#undef val
-
+void
 doexit(int16 val, int16 val2)
 {
 	int16 j;
 	ptptr p;
 
 	for (j = 0; j < UFTSIZE; ++j)
-		ifnot (udata.u_files[j] & 0x80)	/* Portable equivalent of == -1. */
+		ifnot (udata.u_files[j] & 0x80)	/* Portable equiv. of == -1. */
 			doclose(j);
 
 	_sync();	/* Not necessary, but a good idea. */
@@ -476,12 +467,14 @@ doexit(int16 val, int16 val2)
 	panic("doexit:won't exit");
 }
 
-_fork()
+int
+_fork(void)
 {
 	return (dofork());
 }
 
-_pause()
+int
+_pause(void)
 {
 	psleep(0);
 	udata.u_error = EINTR;
@@ -491,12 +484,12 @@ _pause()
 /*************************************
 signal(int16 sig, int16 (*func)())
 ***************************************/
-
-#define sig (int16)udata.u_argn1
-#define func (int (*)())udata.u_argn
-
-_signal()
+int
+_signal(int16 sig, int16 (*func)())
 {
+	sig = (int16)udata.u_argn1;
+	func = (int (*)())udata.u_argn;
+
 	int retval;
 
 	di();
@@ -524,18 +517,15 @@ nogood:
 	return (-1);
 }
 
-#undef sig
-#undef func
-
 /**************************************
 kill(int16 pid, int16 sig)
 *****************************************/
-
-#define pid (int16)udata.u_argn1
-#define sig (int16)udata.u_argn
-
-_kill()
+int
+_kill(int16 pid, int16 sig)
 {
+	pid = (int16)udata.u_argn1;
+	sig = (int16)udata.u_argn;
+
 	ptptr p;
 
 	if (sig <= 0 || sig > 15)
@@ -552,17 +542,14 @@ nogood:
 	return (-1);
 }
 
-#undef pid
-#undef sig
-
 /********************************
 alarm(uint16 secs)
 *********************************/
-
-#define secs (int16)udata.u_argn
-
-_alarm()
+int
+_alarm(uint16 secs)
 {
+	secs = (int16)udata.u_argn;
+
 	int retval;
 
 	di();
@@ -571,5 +558,3 @@ _alarm()
 	ei();
 	return (retval);
 }
-
-#undef secs
