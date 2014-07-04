@@ -13,7 +13,7 @@ uzics
 Introduction:
 
 UZI is an implementation of the Unix kernel written for a Z-80 based
-computer.  It implementts almost all of the functionality of the
+computer.  It implements almost all of the functionality of the
 7th Edition Unix kernel.  UZI was written to run on one specific
 collection of custom-built hardware, but since it can easily have device
 drivers added to it, and it does not use any memory management hardware,
@@ -95,12 +95,12 @@ intro:		What you are reading
 config.h:	Setup parameters, such as table sizes, and the device
 		driver switch table.
 
-unix.h:		All strcuture declarations, typedefs and defines.
+unix.h:		All structure declarations, typedefs and defines.
 		(Includes things like errno.h).
 
 extern.h:	Declarations of all global variables and tables.
 
-data.c:		Dummy to source extern.h and devine globals.
+data.c:		Dummy to source extern.h and define globals.
 
 dispatch.c:	System call dispatch table.
 
