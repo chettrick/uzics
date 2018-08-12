@@ -3,6 +3,24 @@ uzics
 
 8 bit Unix-like operating system for the Z80.
 
+This repository is a retarget of the original UZI code to a custom Z80 SBC.
+This custom board can be found at https://github.com/chettrick/smari
+
+uzics is different than other UZI-derived systems in that it is not
+encumbered by restrictive licenses like the GPL. UZI is public domain
+from what I have gathered about it, so in the same spirit uzics will
+also be public domain. Please notify me if UZI is not public domain.
+
+============================================================================
+
+All UZI code is public domain, not being based on any AT&T code.
+
+The author of UZI, Douglas Braun, can be reached at:
+    7696 West Zayante Rd.
+    Felton, CA 95018
+    oliveb!intelca!mipos3!cadev4!dbraun
+    http://www.dougbraun.com/uzi.html
+
 ============================================================================
 
 		UZI: UNIX Z-80 IMPLEMENTATION
